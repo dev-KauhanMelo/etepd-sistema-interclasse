@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; }
+
+@layer utilities {
+  .score-number {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.pulse-live {
+  animation: pulse-live 1.6s ease-in-out infinite;
+}
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
