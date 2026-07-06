@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import JipdLogo from '../common/JipdLogo'
 import { useEventSettings } from '../../hooks/useEventSettings'
 import { useAuth } from '../../context/AuthContext'
 import { formatShortDate } from '../../utils/formatDate'
@@ -22,7 +21,9 @@ export default function EventGate({ children }) {
 function SplashScreen() {
   return (
     <div className="min-h-screen jipd-gradient circuit-lines flex items-center justify-center">
-      <div className="animate-pop-in"><JipdLogo size="lg" variant="dark" withTagline /></div>
+      <div className="animate-pop-in bg-white rounded-3xl p-3 shadow-glow">
+        <img src="/jipd-logo.jpeg" alt="JIPD 2026" className="w-40 h-40 object-contain rounded-2xl" />
+      </div>
     </div>
   )
 }
@@ -31,7 +32,9 @@ function GateScreen({ start, end }) {
   return (
     <div className="min-h-screen jipd-gradient circuit-lines flex flex-col items-center justify-center px-6 text-center">
       <div className="animate-pop-in flex flex-col items-center">
-        <JipdLogo size="xl" variant="dark" withTagline />
+        <div className="bg-white rounded-3xl p-3.5 shadow-glow">
+          <img src="/jipd-logo.jpeg" alt="JIPD 2026 — Jogos Internos Porto Digital" className="w-52 h-52 object-contain rounded-2xl" />
+        </div>
         <p className="mt-8 text-brand-mist text-sm font-medium uppercase tracking-widest">Os jogos vêm aí</p>
         <p className="mt-2 text-white font-display font-extrabold text-2xl">
           Jogos de {formatShortDate(start)}{end ? ` a ${formatShortDate(end)}` : ''}

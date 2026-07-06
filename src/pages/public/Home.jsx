@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import JipdLogo from '../../components/common/JipdLogo'
 import LiveScoreCard from '../../components/match/LiveScoreCard'
 import Loader from '../../components/common/Loader'
 import Card from '../../components/common/Card'
@@ -25,8 +24,10 @@ export default function Home() {
   return (
     <div className="p-4">
       {/* Hero JIPD */}
-      <div className="jipd-gradient circuit-lines rounded-3xl px-6 pt-8 pb-7 text-center shadow-card animate-pop-in">
-        <JipdLogo size="lg" variant="dark" withTagline />
+      <div className="jipd-gradient circuit-lines rounded-3xl px-6 pt-7 pb-7 text-center shadow-card animate-pop-in">
+        <div className="inline-block bg-white rounded-3xl p-3 shadow-glow">
+          <img src="/jipd-logo.jpeg" alt="JIPD 2026 — Jogos Internos Porto Digital" className="w-44 h-44 object-contain rounded-2xl" />
+        </div>
         {settings?.startAt && (
           <span className="inline-block mt-5 bg-white/10 border border-white/15 text-brand-mist text-xs font-bold px-4 py-1.5 rounded-full tracking-wide">
             {formatShortDate(settings.startAt)}{settings.endAt ? ` → ${formatShortDate(settings.endAt)}` : ''} · ETE Porto Digital

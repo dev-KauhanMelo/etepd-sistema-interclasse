@@ -11,7 +11,9 @@
       "Bash(find ~ -maxdepth 4 -iname \"*JIPD-COMISS*\" 2>/dev/null | head)",
       "Read(//home/k8shii/**)",
       "Read(//home/k8shii/Downloads/**)",
-      "Bash(mkdir -p /home/k8shii/Desktop/interclasse-ete/public && cp \"/home/k8shii/Downloads/JIPD-COMISSÃO.jpeg\" /home/k8shii/Desktop/interclasse-ete/public/jipd-logo.jpeg && ls -la /home/k8shii/Desktop/interclasse-ete/public/)"
+      "Bash(mkdir -p /home/k8shii/Desktop/interclasse-ete/public && cp \"/home/k8shii/Downloads/JIPD-COMISSÃO.jpeg\" /home/k8shii/Desktop/interclasse-ete/public/jipd-logo.jpeg && ls -la /home/k8shii/Desktop/interclasse-ete/public/)",
+      "Bash(git commit --quiet -m 'design: logo oficial da comissão JIPD no site *)",
+      "Bash(npx --no-install firebase --version)"
     ],
     "additionalDirectories": [
       "/home/k8shii/Downloads"

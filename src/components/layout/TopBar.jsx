@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import JipdLogo from '../common/JipdLogo'
 import { useMatches } from '../../hooks/useMatches'
 
 // Barra fixa do topo: logo JIPD no canto esquerdo (volta pra Home)
@@ -11,8 +10,11 @@ export default function TopBar() {
   return (
     <div className="jipd-gradient sticky top-0 z-50 shadow-md">
       <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-between">
-        <Link to="/" aria-label="Ir para o início">
-          <JipdLogo size="sm" variant="dark" />
+        <Link to="/" aria-label="Ir para o início" className="flex items-center gap-2.5">
+          <span className="bg-white rounded-xl p-1 shadow-sm">
+            <img src="/jipd-logo.jpeg" alt="Logo JIPD" className="h-9 w-9 object-contain rounded-lg" />
+          </span>
+          <span className="headline text-lg text-white leading-none">JIPD</span>
         </Link>
         <div className="flex items-center gap-2">
           {liveCount > 0 ? (
