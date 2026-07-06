@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(git checkout *)",
-      "Bash(git add *)",
-      "Bash(git commit -m 'design: fundação da identidade JIPD 2026 \\(paleta, fontes, CSS global\\) *)"
-    ]
-  }
-}

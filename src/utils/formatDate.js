@@ -16,6 +16,12 @@ export function formatTime(timestamp) {
   return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 }
 
+export function formatShortDate(timestamp) {
+  if (!timestamp) return '-'
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
+  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+}
+
 export function isToday(timestamp) {
   if (!timestamp) return false
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)

@@ -1,38 +1,44 @@
 import { Link } from 'react-router-dom'
-import Card from '../common/Card'
 import MatchStatusBadge from './MatchStatusBadge'
+import TeamCrest from './TeamCrest'
 import { formatTime } from '../../utils/formatDate'
 
+// O card-assinatura do site: escudo de cada turma em cima do nome
+// (como nos jogos de basquete), placar gigante no centro.
 export default function LiveScoreCard({ match }) {
+  const isLive = match.status === 'live'
+
   return (
-    <Link to={`/placar/${match.id}`}>
-      <Card className="mb-3 hover:border-brand/40 transition">
-        <div className="flex items-center justify-between mb-3">
-          <MatchStatusBadge status={match.status} />
-          <span className="text-xs text-slate-400">{formatTime(match.scheduledAt)} · {match.location}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <TeamLabel team={match.teamA} />
-          <div className="flex items-center gap-3 score-number text-3xl">
-            <span style={{ color: match.teamA?.color }}>{match.scoreA ?? 0}</span>
-            <span className="text-slate-300">×</span>
-            <span style={{ color: match.teamB?.color }}>{match.scoreB ?? 0}</span>
+    <Link to={`/placar/${match.id}`} className="block mb-3 animate-pop-in">
+      <div className={`bg-white rounded-2xl shadow-card border overflow-hidden transition hover:-translate-y-0.5 ${isLive ? 'border-live/30' : 'border-brand-mist/25 hover:border-brand/40'}`}>
+        {isLive && <div className="h-1 live-bar" />}
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <MatchStatusBadge status={match.status} />
+            <span className="text-xs font-medium text-brand-steel">
+              {formatTime(match.scheduledAt)} · {match.location}
+            </span>
           </div>
-          <TeamLabel team={match.teamB} align="right" />
+          <div className="flex items-center justify-between gap-2">
+            <TeamSide team={match.teamA} />
+            <div className="flex items-baseline gap-2 score-number text-4xl text-brand-navy">
+              <span>{match.scoreA ?? 0}</span>
+              <span className="text-brand-mist text-2xl not-italic font-bold">×</span>
+              <span>{match.scoreB ?? 0}</span>
+            </div>
+            <TeamSide team={match.teamB} />
+          </div>
         </div>
-      </Card>
+      </div>
     </Link>
   )
 }
 
-function TeamLabel({ team, align = 'left' }) {
+function TeamSide({ team }) {
   return (
-    <div className={`flex-1 ${align === 'right' ? 'text-right' : ''}`}>
-      <span
-        className="w-2.5 h-2.5 rounded-full inline-block mr-1.5"
-        style={{ backgroundColor: team?.color || '#94a3b8' }}
-      />
-      <span className="text-sm font-medium text-slate-600">{team?.name || '-'}</span>
+    <div className="flex-1 flex flex-col items-center gap-1.5 min-w-0">
+      <TeamCrest team={team} size="md" />
+      <span className="text-xs font-bold text-brand-deep truncate max-w-full">{team?.name || '-'}</span>
     </div>
   )
 }
