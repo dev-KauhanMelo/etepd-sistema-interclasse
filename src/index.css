@@ -5,10 +5,35 @@
 html, body, #root { height: 100%; }
 
 @layer utilities {
+  /* Números de placar: pesados e inclinados, como na logo JIPD */
   .score-number {
-    font-family: 'Manrope', sans-serif;
-    font-weight: 800;
+    font-family: 'Archivo', sans-serif;
+    font-weight: 900;
+    font-style: italic;
     font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+  }
+
+  /* Título de seção estilo "athletic": itálico, pesado, tracking apertado */
+  .headline {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  /* Fundo hero: azul marinho -> azul royal, como os materiais da comissão */
+  .jipd-gradient {
+    background: linear-gradient(135deg, #0E141D 0%, #182750 45%, #0552CB 130%);
+  }
+
+  /* Linhas de circuito da identidade JIPD (decoração sutil) */
+  .circuit-lines {
+    background-image:
+      linear-gradient(rgba(163, 180, 206, 0.10) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(163, 180, 206, 0.10) 1px, transparent 1px);
+    background-size: 28px 28px;
   }
 }
 
@@ -18,4 +43,25 @@ html, body, #root { height: 100%; }
 @keyframes pulse-live {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
+}
+
+/* Barra "AO VIVO" que corre no card de jogo ao vivo */
+.live-bar {
+  background: linear-gradient(90deg, transparent, #EF4444 40%, #EF4444 60%, transparent);
+  background-size: 200% 100%;
+  animation: live-bar 2.2s linear infinite;
+}
+@keyframes live-bar {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Chama da tocha na tela de abertura */
+.flame {
+  animation: flame 1.8s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+@keyframes flame {
+  0%, 100% { transform: scale(1) rotate(-2deg); }
+  50% { transform: scale(1.08) rotate(2deg); }
 }
