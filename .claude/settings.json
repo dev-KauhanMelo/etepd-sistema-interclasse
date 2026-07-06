@@ -27,7 +27,8 @@
       "Bash(convert logo-test.png -resize 400x400 -background '#182750' -flatten preview-dark.png)",
       "Bash(git reset *)",
       "Bash(git commit --quiet -m 'design: rodada de correções e melhorias da revisão no celular *)",
-      "Bash(git commit --quiet -m 'chore: limpa arquivo temporário de settings *)"
+      "Bash(git commit --quiet -m 'chore: limpa arquivo temporário de settings *)",
+      "Bash(curl -s -o /dev/null -w \"logo png: %{http_code}\\\\n\" https://interclasse-etepd-sistema.web.app/jipd-logo.png)"
     ],
     "additionalDirectories": [
       "/home/k8shii/Downloads"
