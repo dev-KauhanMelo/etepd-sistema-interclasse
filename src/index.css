@@ -37,6 +37,10 @@ html, body, #root { height: 100%; }
   }
 }
 
+/* Esconde a barra de rolagem dos filtros horizontais */
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
 .pulse-live {
   animation: pulse-live 1.6s ease-in-out infinite;
 }

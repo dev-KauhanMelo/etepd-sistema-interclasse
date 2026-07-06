@@ -5,7 +5,8 @@
       "Bash(git add *)",
       "Bash(git commit -m 'design: fundação da identidade JIPD 2026 \\(paleta, fontes, CSS global\\) *)",
       "Bash(npm run *)",
-      "Bash(git commit --quiet -m 'design: componentes da identidade JIPD + tela de abertura pré-evento *)"
+      "Bash(git commit --quiet -m 'design: componentes da identidade JIPD + tela de abertura pré-evento *)",
+      "Bash(git commit --quiet -m 'design: repaginação completa das páginas públicas *)"
     ]
   }
 }

@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
-import Header from '../../components/layout/Header'
 import Card from '../../components/common/Card'
 import MatchStatusBadge from '../../components/match/MatchStatusBadge'
+import TeamCrest from '../../components/match/TeamCrest'
 import Loader from '../../components/common/Loader'
 import { useMatch } from '../../hooks/useMatch'
 import { formatDateTime } from '../../utils/formatDate'
@@ -15,57 +15,71 @@ export default function MatchDetail() {
   if (!match) {
     return (
       <div className="p-4">
-        Jogo não encontrado. <Link to="/placar" className="text-brand">Voltar</Link>
+        Jogo não encontrado. <Link to="/placar" className="text-brand font-semibold">Voltar</Link>
       </div>
     )
   }
 
+  const isLive = match.status === 'live'
+
   return (
-    <div>
-      <Header title={PHASE_LABELS[match.phase] || 'Partida'} subtitle={match.location} />
-      <div className="p-4">
-        <Card>
-          <div className="flex justify-center mb-4"><MatchStatusBadge status={match.status} /></div>
-          <div className="flex items-center justify-between">
-            <TeamCol team={match.teamA} />
-            <span className="score-number text-5xl text-slate-800 px-2">{match.scoreA ?? 0}</span>
-            <span className="text-slate-300 text-2xl">×</span>
-            <span className="score-number text-5xl text-slate-800 px-2">{match.scoreB ?? 0}</span>
-            <TeamCol team={match.teamB} />
+    <div className="p-4">
+      {/* Painel de placar estilo arena */}
+      <div className={`rounded-3xl overflow-hidden shadow-card animate-pop-in ${isLive ? 'jipd-gradient circuit-lines' : 'bg-white border border-brand-mist/25'}`}>
+        {isLive && <div className="h-1 live-bar" />}
+        <div className="p-6">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <MatchStatusBadge status={match.status} />
           </div>
-          <p className="text-center text-xs text-slate-400 mt-4">{formatDateTime(match.scheduledAt)}</p>
-        </Card>
+          <p className={`text-center text-xs font-bold uppercase tracking-widest mb-5 ${isLive ? 'text-brand-mist' : 'text-brand-steel'}`}>
+            {PHASE_LABELS[match.phase] || 'Partida'} · {match.location}
+          </p>
 
-        {match.periodScores?.length > 0 && (
-          <Card className="mt-4">
-            <p className="text-sm font-semibold mb-2">Pontuação por período</p>
-            {match.periodScores.map((p, i) => (
-              <div key={i} className="flex justify-between text-sm py-1 border-b border-slate-50 last:border-0">
-                <span className="text-slate-400">Período {p.period}</span>
-                <span>{p.scoreA} × {p.scoreB}</span>
-              </div>
-            ))}
-          </Card>
-        )}
+          <div className="flex items-center justify-between gap-2">
+            <TeamCol team={match.teamA} dark={isLive} />
+            <div className="flex items-baseline gap-2">
+              <span className={`score-number text-6xl ${isLive ? 'text-white' : 'text-brand-navy'}`}>{match.scoreA ?? 0}</span>
+              <span className={`text-2xl font-bold ${isLive ? 'text-brand-mist/60' : 'text-brand-mist'}`}>×</span>
+              <span className={`score-number text-6xl ${isLive ? 'text-white' : 'text-brand-navy'}`}>{match.scoreB ?? 0}</span>
+            </div>
+            <TeamCol team={match.teamB} dark={isLive} />
+          </div>
 
-        {match.matchNotes?.length > 0 && (
-          <Card className="mt-4">
-            <p className="text-sm font-semibold mb-2">Avisos da partida</p>
-            {match.matchNotes.slice().reverse().map((n, i) => (
-              <p key={i} className="text-sm text-slate-500 py-1">• {n}</p>
-            ))}
-          </Card>
-        )}
+          <p className={`text-center text-xs mt-5 ${isLive ? 'text-brand-mist/80' : 'text-brand-steel'}`}>
+            {formatDateTime(match.scheduledAt)}
+          </p>
+        </div>
       </div>
+
+      {match.periodScores?.length > 0 && (
+        <Card className="mt-4">
+          <p className="headline text-sm text-brand-navy mb-2">Pontuação por período</p>
+          {match.periodScores.map((p, i) => (
+            <div key={i} className="flex justify-between text-sm py-1.5 border-b border-brand-paper last:border-0">
+              <span className="text-brand-steel">Período {p.period}</span>
+              <span className="score-number text-brand-deep">{p.scoreA} × {p.scoreB}</span>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      {match.matchNotes?.length > 0 && (
+        <Card className="mt-4 border-l-4 border-l-brand">
+          <p className="headline text-sm text-brand-navy mb-2">Avisos da partida</p>
+          {match.matchNotes.slice().reverse().map((n, i) => (
+            <p key={i} className="text-sm text-brand-steel py-1">• {n}</p>
+          ))}
+        </Card>
+      )}
     </div>
   )
 }
 
-function TeamCol({ team }) {
+function TeamCol({ team, dark = false }) {
   return (
-    <div className="flex-1 text-center">
-      <div className="w-3 h-3 rounded-full mx-auto mb-1" style={{ backgroundColor: team?.color || '#94a3b8' }} />
-      <p className="text-sm font-medium">{team?.name || '-'}</p>
+    <div className="flex-1 flex flex-col items-center gap-2 min-w-0">
+      <TeamCrest team={team} size="lg" />
+      <p className={`text-sm font-bold truncate max-w-full ${dark ? 'text-white' : 'text-brand-deep'}`}>{team?.name || '-'}</p>
     </div>
   )
 }
