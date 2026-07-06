@@ -14,6 +14,28 @@ service cloud.firestore {
     match /announcements/{doc} { allow read: if true; allow write: if isAdmin(); }
     match /settings/{doc}      { allow read: if true; allow write: if isAdmin(); }
 
+    // Bolão: qualquer um lê e cria palpite, mas só enquanto o jogo está
+    // agendado (a bola rolou = palpites fechados). Ninguém edita depois —
+    // o id do doc é matchId_userId, então só existe 1 palpite por pessoa/jogo.
+    match /predictions/{doc} {
+      allow read: if true;
+      allow create: if
+        request.resource.data.keys().hasAll(['matchId', 'userId', 'userName', 'userClass', 'scoreA', 'scoreB', 'createdAt']) &&
+        request.resource.data.userName is string &&
+        request.resource.data.userName.size() >= 2 &&
+        request.resource.data.userName.size() <= 40 &&
+        request.resource.data.userClass is string &&
+        request.resource.data.userClass.size() <= 40 &&
+        request.resource.data.scoreA is int &&
+        request.resource.data.scoreA >= 0 && request.resource.data.scoreA <= 99 &&
+        request.resource.data.scoreB is int &&
+        request.resource.data.scoreB >= 0 && request.resource.data.scoreB <= 99 &&
+        doc == request.resource.data.matchId + '_' + request.resource.data.userId &&
+        get(/databases/$(database)/documents/matches/$(request.resource.data.matchId)).data.status == 'scheduled';
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
     match /admins/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow write: if false;

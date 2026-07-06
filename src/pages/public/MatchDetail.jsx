@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import Card from '../../components/common/Card'
+import PalpiteWidget from '../../components/bolao/PalpiteWidget'
+import { getFanProfile } from '../../utils/fanProfile'
 import MatchStatusBadge from '../../components/match/MatchStatusBadge'
 import TeamCrest from '../../components/match/TeamCrest'
 import Loader from '../../components/common/Loader'
@@ -10,6 +13,7 @@ import { PHASE_LABELS } from '../../utils/constants'
 export default function MatchDetail() {
   const { id } = useParams()
   const { match, loading } = useMatch(id)
+  const [profile] = useState(getFanProfile())
 
   if (loading) return <Loader />
   if (!match) {
@@ -50,6 +54,14 @@ export default function MatchDetail() {
           </p>
         </div>
       </div>
+
+      {/* Bolão do jogo: palpite antes, torcida durante e depois */}
+      {['scheduled', 'live', 'finished'].includes(match.status) && (
+        <Card className="mt-4">
+          <p className="headline text-sm text-brand-navy mb-3">Bolão JIPD 🎯</p>
+          <PalpiteWidget match={match} profile={profile} />
+        </Card>
+      )}
 
       {match.periodScores?.length > 0 && (
         <Card className="mt-4">

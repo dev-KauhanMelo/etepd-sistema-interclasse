@@ -8,6 +8,7 @@ const links = [
   { to: '/admin/ranking', label: 'Ranking' },
   { to: '/admin/avisos', label: 'Avisos' },
   { to: '/admin/cadastro', label: 'Turmas/Modalidades' },
+  { to: '/admin/config', label: 'Configurações' },
 ]
 
 export default function AdminLayout() {
