@@ -11,7 +11,23 @@
       "Bash(find ~ -maxdepth 4 -iname \"*JIPD-COMISS*\" 2>/dev/null | head)",
       "Read(//home/k8shii/**)",
       "Read(//home/k8shii/Downloads/**)",
-      "Bash(mkdir -p /home/k8shii/Desktop/interclasse-ete/public && cp \"/home/k8shii/Downloads/JIPD-COMISSÃO.jpeg\" /home/k8shii/Desktop/interclasse-ete/public/jipd-logo.jpeg && ls -la /home/k8shii/Desktop/interclasse-ete/public/)"
+      "Bash(mkdir -p /home/k8shii/Desktop/interclasse-ete/public && cp \"/home/k8shii/Downloads/JIPD-COMISSÃO.jpeg\" /home/k8shii/Desktop/interclasse-ete/public/jipd-logo.jpeg && ls -la /home/k8shii/Desktop/interclasse-ete/public/)",
+      "Bash(git commit --quiet -m 'design: logo oficial da comissão JIPD no site *)",
+      "Bash(npx --no-install firebase --version)",
+      "Bash(firebase deploy *)",
+      "Bash(curl -s https://interclasse-etepd-sistema.web.app)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://interclasse-etepd-sistema.web.app/jipd-logo.jpeg)",
+      "Bash(convert -version)",
+      "Bash(convert /home/k8shii/Desktop/interclasse-ete/public/jipd-logo.jpeg -resize 800x800 -fuzz 12% -fill none -draw \"color 5,5 floodfill\" -draw \"color 795,5 floodfill\" -draw \"color 5,795 floodfill\" -draw \"color 795,795 floodfill\" -draw \"color 400,5 floodfill\" -draw \"color 400,795 floodfill\" -draw \"color 5,400 floodfill\" -draw \"color 795,400 floodfill\" -channel alpha -blur 0x0.5 -level 50%,100% +channel -trim +repage logo-test.png)",
+      "Bash(identify logo-test.png)",
+      "Bash(convert /home/k8shii/Desktop/interclasse-ete/public/jipd-logo.jpeg -resize 800x800 -alpha set -fuzz 13% -fill none -draw \"matte 5,5 floodfill\" -draw \"matte 795,5 floodfill\" -draw \"matte 5,790 floodfill\" -draw \"matte 795,790 floodfill\" -draw \"matte 400,5 floodfill\" -draw \"matte 400,790 floodfill\" -draw \"matte 5,400 floodfill\" -draw \"matte 795,400 floodfill\" -trim +repage logo-test.png)",
+      "Bash(convert logo-test.png -background '#182750' -flatten preview-dark.png)",
+      "Bash(convert /home/k8shii/Desktop/interclasse-ete/public/jipd-logo.jpeg -resize 800x800 -alpha set -fuzz 13% -fill none -draw \"alpha 5,5 floodfill\" -draw \"alpha 795,5 floodfill\" -draw \"alpha 5,790 floodfill\" -draw \"alpha 795,790 floodfill\" -draw \"alpha 400,5 floodfill\" -draw \"alpha 400,790 floodfill\" -draw \"alpha 5,400 floodfill\" -draw \"alpha 795,400 floodfill\" -trim +repage logo-test.png)",
+      "Bash(convert /home/k8shii/Desktop/interclasse-ete/public/jipd-logo.jpeg -resize 800x800 -alpha set -fuzz 13% -fill none -floodfill +5+5 white -floodfill +795+5 white -floodfill +5+790 white -floodfill +795+790 white -floodfill +400+5 white -floodfill +400+790 white -floodfill +5+400 white -floodfill +795+400 white -trim +repage logo-test.png)",
+      "Bash(convert logo-test.png -resize 400x400 -background '#182750' -flatten preview-dark.png)",
+      "Bash(git reset *)",
+      "Bash(git commit --quiet -m 'design: rodada de correções e melhorias da revisão no celular *)",
+      "Bash(git commit --quiet -m 'chore: limpa arquivo temporário de settings *)"
     ],
     "additionalDirectories": [
       "/home/k8shii/Downloads"
