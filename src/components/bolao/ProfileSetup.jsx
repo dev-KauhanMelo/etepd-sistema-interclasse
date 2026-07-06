@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Card from '../common/Card'
 import Button from '../common/Button'
-import { NodesIcon } from '../common/Icons'
+import { NodesIcon, FireIcon } from '../common/Icons'
 import { useClasses } from '../../hooks/useClasses'
 import { saveFanProfile } from '../../utils/fanProfile'
 
@@ -48,7 +48,9 @@ export default function ProfileSetup({ onDone }) {
             <option key={c.id} value={c.name}>{c.name}</option>
           ))}
         </select>
-        <Button type="submit" className="w-full">Começar a palpitar 🔥</Button>
+        <Button type="submit" className="w-full gap-1.5">
+          Começar a palpitar <FireIcon className="w-4 h-4 text-amber-300" />
+        </Button>
       </form>
     </Card>
   )

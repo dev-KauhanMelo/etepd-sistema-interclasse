@@ -36,8 +36,8 @@ export default function MatchForm({ match, onClose }) {
       modalityId: form.modalityId,
       phase: form.phase,
       group: form.group,
-      teamA: { classId: teamA.id, name: teamA.name, color: teamA.color },
-      teamB: { classId: teamB.id, name: teamB.name, color: teamB.color },
+      teamA: { classId: teamA.id, name: teamA.name, color: teamA.color, logoUrl: teamA.logoUrl || null },
+      teamB: { classId: teamB.id, name: teamB.name, color: teamB.color, logoUrl: teamB.logoUrl || null },
       location: form.location,
       scheduledAt: new Date(form.scheduledAt),
     }

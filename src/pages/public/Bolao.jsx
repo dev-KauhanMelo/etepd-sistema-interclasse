@@ -7,7 +7,7 @@ import TeamCrest from '../../components/match/TeamCrest'
 import MatchStatusBadge from '../../components/match/MatchStatusBadge'
 import ProfileSetup from '../../components/bolao/ProfileSetup'
 import PalpiteWidget from '../../components/bolao/PalpiteWidget'
-import { NodesIcon, TrophyIcon } from '../../components/common/Icons'
+import { NodesIcon, TrophyIcon, SoccerBallIcon, CrownIcon, FireIcon } from '../../components/common/Icons'
 import { useMatches } from '../../hooks/useMatches'
 import { useAllPredictions } from '../../hooks/usePredictions'
 import { getFanProfile } from '../../utils/fanProfile'
@@ -34,8 +34,12 @@ export default function Bolao() {
 
       <div className="p-4 pt-2">
         <div className="flex gap-2 mb-4 bg-white rounded-2xl p-1 border border-brand-mist/30 shadow-card">
-          <TabButton active={tab === 'palpites'} onClick={() => setTab('palpites')}>🎯 Palpites</TabButton>
-          <TabButton active={tab === 'ranking'} onClick={() => setTab('ranking')}>🏆 Cravadores</TabButton>
+          <TabButton active={tab === 'palpites'} onClick={() => setTab('palpites')}>
+            <SoccerBallIcon className="w-4 h-4" /> Palpites
+          </TabButton>
+          <TabButton active={tab === 'ranking'} onClick={() => setTab('ranking')}>
+            <TrophyIcon className="w-4 h-4" /> Cravadores
+          </TabButton>
         </div>
 
         {tab === 'palpites' ? (
@@ -43,9 +47,10 @@ export default function Bolao() {
             {!profile ? (
               <ProfileSetup onDone={setProfile} />
             ) : (
-              <p className="text-sm text-brand-steel mb-3">
+              <p className="text-sm text-brand-steel mb-3 inline-flex items-center gap-1.5">
                 Fala, <span className="font-bold text-brand-deep">{profile.name}</span>
-                {profile.className ? ` (${profile.className})` : ''}! Bora cravar? 🔥
+                {profile.className ? ` (${profile.className})` : ''}! Bora cravar?
+                <FireIcon className="w-4 h-4 text-amber-500" />
               </p>
             )}
 
@@ -99,14 +104,14 @@ function BolaoMatchCard({ match, profile }) {
         <PalpiteWidget match={match} profile={profile} />
       ) : (
         <p className="text-center text-xs text-brand-steel bg-brand-paper/70 rounded-xl px-3 py-2.5">
-          Crie seu perfil aí em cima pra liberar os palpites 👆
+          Crie seu perfil no topo da página pra liberar os palpites
         </p>
       )}
     </Card>
   )
 }
 
-const medals = ['🥇', '🥈', '🥉']
+const medalColors = ['text-amber-400', 'text-slate-400', 'text-amber-700']
 
 function RankingTab({ ranking, profile }) {
   const scored = ranking.filter((r) => r.total > 0)
@@ -131,8 +136,8 @@ function RankingTab({ ranking, profile }) {
               key={r.userId}
               className={`flex items-center gap-3 px-4 py-3 border-b border-brand-paper last:border-0 ${isMe ? 'bg-brand/5' : ''}`}
             >
-              <span className="w-8 text-center shrink-0">
-                {i < 3 ? <span className="text-lg">{medals[i]}</span> : <span className="score-number text-brand-mist">{i + 1}</span>}
+              <span className="w-8 flex justify-center shrink-0">
+                {i < 3 ? <CrownIcon className={`w-5 h-5 ${medalColors[i]}`} /> : <span className="score-number text-brand-mist">{i + 1}</span>}
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-brand-deep truncate">
@@ -167,7 +172,7 @@ function TabButton({ active, children, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`flex-1 py-2 rounded-xl text-sm font-bold transition ${active ? 'bg-brand text-white shadow-sm' : 'text-brand-steel'}`}
+      className={`flex-1 py-2 rounded-xl text-sm font-bold transition inline-flex items-center justify-center gap-1.5 ${active ? 'bg-brand text-white shadow-sm' : 'text-brand-steel'}`}
     >
       {children}
     </button>

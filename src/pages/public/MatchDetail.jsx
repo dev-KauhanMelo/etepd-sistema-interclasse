@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import Card from '../../components/common/Card'
 import PalpiteWidget from '../../components/bolao/PalpiteWidget'
+import { SoccerBallIcon } from '../../components/common/Icons'
 import { getFanProfile } from '../../utils/fanProfile'
 import MatchStatusBadge from '../../components/match/MatchStatusBadge'
 import TeamCrest from '../../components/match/TeamCrest'
+import FlipScore from '../../components/match/FlipScore'
 import Loader from '../../components/common/Loader'
 import { useMatch } from '../../hooks/useMatch'
 import { formatDateTime } from '../../utils/formatDate'
@@ -29,7 +31,7 @@ export default function MatchDetail() {
   return (
     <div className="p-4">
       {/* Painel de placar estilo arena */}
-      <div className={`rounded-3xl overflow-hidden shadow-card animate-pop-in ${isLive ? 'jipd-gradient circuit-lines' : 'bg-white border border-brand-mist/25'}`}>
+      <div className={`rounded-3xl overflow-hidden shadow-card animate-pop-in ${isLive ? 'jipd-hero' : 'bg-white border border-brand-mist/25'}`}>
         {isLive && <div className="h-1 live-bar" />}
         <div className="p-6">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -41,10 +43,10 @@ export default function MatchDetail() {
 
           <div className="flex items-center justify-between gap-2">
             <TeamCol team={match.teamA} dark={isLive} />
-            <div className="flex items-baseline gap-2">
-              <span className={`score-number text-6xl ${isLive ? 'text-white' : 'text-brand-navy'}`}>{match.scoreA ?? 0}</span>
+            <div className="flex items-center gap-2">
+              <FlipScore value={match.scoreA} size="lg" />
               <span className={`text-2xl font-bold ${isLive ? 'text-brand-mist/60' : 'text-brand-mist'}`}>×</span>
-              <span className={`score-number text-6xl ${isLive ? 'text-white' : 'text-brand-navy'}`}>{match.scoreB ?? 0}</span>
+              <FlipScore value={match.scoreB} size="lg" />
             </div>
             <TeamCol team={match.teamB} dark={isLive} />
           </div>
@@ -58,7 +60,9 @@ export default function MatchDetail() {
       {/* Bolão do jogo: palpite antes, torcida durante e depois */}
       {['scheduled', 'live', 'finished'].includes(match.status) && (
         <Card className="mt-4">
-          <p className="headline text-sm text-brand-navy mb-3">Bolão JIPD 🎯</p>
+          <p className="headline text-sm text-brand-navy mb-3 flex items-center gap-1.5">
+            Bolão JIPD <SoccerBallIcon className="w-4 h-4 text-brand not-italic" />
+          </p>
           <PalpiteWidget match={match} profile={profile} />
         </Card>
       )}

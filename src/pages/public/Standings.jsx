@@ -4,7 +4,7 @@ import Card from '../../components/common/Card'
 import EmptyState from '../../components/common/EmptyState'
 import Loader from '../../components/common/Loader'
 import TeamCrest from '../../components/match/TeamCrest'
-import { TrophyIcon } from '../../components/common/Icons'
+import { TrophyIcon, CrownIcon } from '../../components/common/Icons'
 import { useModalities } from '../../hooks/useModalities'
 import { useStandings } from '../../hooks/useStandings'
 import { useMatches } from '../../hooks/useMatches'
@@ -26,7 +26,7 @@ export default function Standings() {
 
   const teamOf = (s) => {
     const cls = classes.find((c) => c.id === s.classId)
-    return { name: s.className || cls?.name || s.classId, color: cls?.color }
+    return { name: s.className || cls?.name || s.classId, color: cls?.color, logoUrl: cls?.logoUrl }
   }
 
   const podium = standings.slice(0, 3)
@@ -130,13 +130,13 @@ export default function Standings() {
   )
 }
 
-const medals = { 1: '🥇', 2: '🥈', 3: '🥉' }
+const medalColors = { 1: 'text-amber-400', 2: 'text-slate-400', 3: 'text-amber-700' }
 
 function PodiumSpot({ standing, team, place }) {
   const height = place === 1 ? 'h-24' : place === 2 ? 'h-16' : 'h-12'
   return (
     <div className="flex flex-col items-center flex-1 max-w-[110px]">
-      <span className="text-xl mb-1">{medals[place]}</span>
+      <CrownIcon className={`w-6 h-6 mb-1 ${medalColors[place]}`} />
       <TeamCrest team={team} size={place === 1 ? 'lg' : 'md'} />
       <p className="text-xs font-bold text-brand-deep mt-1.5 truncate max-w-full">{team.name}</p>
       <p className="text-[10px] text-brand-steel mb-1.5">{standing.points} pts</p>

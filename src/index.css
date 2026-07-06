@@ -7,8 +7,8 @@ html, body, #root { height: 100%; }
 @layer utilities {
   /* Números de placar: pesados e inclinados, como na logo JIPD */
   .score-number {
-    font-family: 'Archivo', sans-serif;
-    font-weight: 900;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
     font-style: italic;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.03em;
@@ -16,30 +16,40 @@ html, body, #root { height: 100%; }
 
   /* Título de seção estilo "athletic": itálico, pesado, tracking apertado */
   .headline {
-    font-family: 'Archivo', sans-serif;
-    font-weight: 900;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
     font-style: italic;
     letter-spacing: -0.02em;
     text-transform: uppercase;
   }
 
-  /* Fundo hero: azul marinho -> azul royal, como os materiais da comissão */
-  .jipd-gradient {
-    background: linear-gradient(135deg, #0E141D 0%, #182750 45%, #0552CB 130%);
-  }
-
-  /* Linhas de circuito da identidade JIPD (decoração sutil) */
-  .circuit-lines {
+  /* Fundo hero: gradiente marinho -> royal COM as linhas de circuito juntas.
+     (gradiente e grid precisam viver na mesma classe: os dois usam
+     background-image, então em classes separadas um apaga o outro) */
+  .jipd-hero {
+    background-color: #182750;
     background-image:
-      linear-gradient(rgba(163, 180, 206, 0.10) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(163, 180, 206, 0.10) 1px, transparent 1px);
-    background-size: 28px 28px;
+      linear-gradient(rgba(163, 180, 206, 0.09) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(163, 180, 206, 0.09) 1px, transparent 1px),
+      linear-gradient(135deg, #0E141D 0%, #182750 45%, #0552CB 130%);
+    background-size: 28px 28px, 28px 28px, 100% 100%;
   }
-}
 
-/* Esconde a barra de rolagem dos filtros horizontais */
-.scrollbar-none { scrollbar-width: none; }
-.scrollbar-none::-webkit-scrollbar { display: none; }
+  /* Versão sem grid (barras, pódio) */
+  .jipd-gradient {
+    background-color: #182750;
+    background-image: linear-gradient(135deg, #0E141D 0%, #182750 45%, #0552CB 130%);
+  }
+
+  /* Brilho suave atrás da logo transparente sobre fundo escuro */
+  .logo-glow {
+    filter: drop-shadow(0 0 18px rgba(239, 245, 249, 0.45)) drop-shadow(0 0 2px rgba(239, 245, 249, 0.35));
+  }
+
+  /* Esconde a barra de rolagem dos filtros horizontais */
+  .scrollbar-none { scrollbar-width: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+}
 
 .pulse-live {
   animation: pulse-live 1.6s ease-in-out infinite;
@@ -60,12 +70,44 @@ html, body, #root { height: 100%; }
   100% { background-position: -200% 0; }
 }
 
-/* Chama da tocha na tela de abertura */
-.flame {
-  animation: flame 1.8s ease-in-out infinite;
-  transform-origin: bottom center;
+/* ===== Placar flip (estilo placar de mesa manual) =====
+   O painel escuro tem uma linha no meio, como as folhinhas físicas.
+   Quando o número muda, o novo entra girando de cima (rotateX),
+   imitando a folhinha virando. */
+.flip-panel {
+  position: relative;
+  background: linear-gradient(180deg, #1a2230 0%, #0E141D 48%, #05080d 52%, #131a26 100%);
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  perspective: 400px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 8px rgba(14, 20, 29, 0.45);
 }
-@keyframes flame {
-  0%, 100% { transform: scale(1) rotate(-2deg); }
-  50% { transform: scale(1.08) rotate(2deg); }
+.flip-panel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.55);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+.flip-digit {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #EFF5F9;
+  line-height: 1;
+  animation: flip-turn 0.5s cubic-bezier(0.3, 0.9, 0.4, 1.1) both;
+  transform-origin: center center;
+  backface-visibility: hidden;
+}
+@keyframes flip-turn {
+  0% { transform: rotateX(-95deg); opacity: 0.2; }
+  55% { transform: rotateX(12deg); opacity: 1; }
+  100% { transform: rotateX(0deg); }
 }

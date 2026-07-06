@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import LiveScoreCard from '../../components/match/LiveScoreCard'
 import Loader from '../../components/common/Loader'
 import Card from '../../components/common/Card'
-import { NodesIcon, TrophyIcon, ClockIcon } from '../../components/common/Icons'
+import { NodesIcon, TrophyIcon, ClockIcon, FireIcon, MegaphoneIcon } from '../../components/common/Icons'
 import { useMatches } from '../../hooks/useMatches'
 import { useAnnouncements } from '../../hooks/useAnnouncements'
 import { useEventSettings } from '../../hooks/useEventSettings'
@@ -23,14 +23,15 @@ export default function Home() {
 
   return (
     <div className="p-4">
-      {/* Hero JIPD */}
-      <div className="jipd-gradient circuit-lines rounded-3xl px-6 pt-7 pb-7 text-center shadow-card animate-pop-in">
-        <div className="inline-block bg-white rounded-3xl p-3 shadow-glow">
-          <img src="/jipd-logo.jpeg" alt="JIPD 2026 — Jogos Internos Porto Digital" className="w-44 h-44 object-contain rounded-2xl" />
-        </div>
+      {/* Hero de boas-vindas */}
+      <div className="jipd-hero rounded-3xl px-6 pt-7 pb-7 text-center shadow-card animate-pop-in">
+        <img src="/jipd-logo.png" alt="Logo JIPD" className="h-20 w-auto mx-auto logo-glow" />
+        <p className="mt-5 text-brand-light text-xs font-bold tracking-[0.35em] uppercase">Bem-vindo ao</p>
+        <h1 className="headline text-5xl text-white mt-1 leading-none">JIPD 2026</h1>
+        <p className="mt-2 text-brand-mist text-sm font-medium">Jogos Internos · ETE Porto Digital</p>
         {settings?.startAt && (
-          <span className="inline-block mt-5 bg-white/10 border border-white/15 text-brand-mist text-xs font-bold px-4 py-1.5 rounded-full tracking-wide">
-            {formatShortDate(settings.startAt)}{settings.endAt ? ` → ${formatShortDate(settings.endAt)}` : ''} · ETE Porto Digital
+          <span className="inline-block mt-4 bg-white/10 border border-white/15 text-brand-mist text-xs font-bold px-4 py-1.5 rounded-full tracking-wide">
+            {formatShortDate(settings.startAt)}{settings.endAt ? ` → ${formatShortDate(settings.endAt)}` : ''}
           </span>
         )}
       </div>
@@ -55,7 +56,9 @@ export default function Home() {
             <NodesIcon className="w-6 h-6 text-brand-light" />
           </div>
           <div className="flex-1">
-            <p className="font-display font-extrabold text-white">Bolão JIPD 🔥</p>
+            <p className="font-display font-extrabold text-white inline-flex items-center gap-1.5">
+              Bolão JIPD <FireIcon className="w-4 h-4 text-amber-400" />
+            </p>
             <p className="text-xs text-brand-mist mt-0.5">Dê seus palpites, acerte os placares e suba no ranking dos cravadores!</p>
           </div>
           <span className="text-brand-light font-black text-xl">→</span>
@@ -85,9 +88,10 @@ export default function Home() {
       )}
 
       {/* Atalhos */}
-      <div className="grid grid-cols-2 gap-3 mt-6">
-        <QuickLink to="/horarios" icon={<ClockIcon className="w-5 h-5" />} label="Tabela de jogos" />
-        <QuickLink to="/ranking" icon={<TrophyIcon className="w-5 h-5" />} label="Classificação" />
+      <div className="grid grid-cols-3 gap-3 mt-6">
+        <QuickLink to="/horarios" icon={<ClockIcon className="w-6 h-6" />} label="Tabela" />
+        <QuickLink to="/ranking" icon={<TrophyIcon className="w-6 h-6" />} label="Ranking" />
+        <QuickLink to="/avisos" icon={<MegaphoneIcon className="w-6 h-6" />} label="Avisos" />
       </div>
     </div>
   )
@@ -105,9 +109,9 @@ function SectionTitle({ children, live = false }) {
 function QuickLink({ to, icon, label }) {
   return (
     <Link to={to}>
-      <Card className="flex items-center gap-3 py-3 text-brand hover:border-brand/40 transition">
+      <Card className="flex flex-col items-center gap-1.5 py-3.5 text-brand hover:border-brand/40 transition">
         {icon}
-        <span className="text-sm font-bold text-brand-deep">{label}</span>
+        <span className="text-xs font-bold text-brand-deep">{label}</span>
       </Card>
     </Link>
   )

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Button from '../common/Button'
+import { SoccerBallIcon, CheckCircleIcon, FireIcon } from '../common/Icons'
 import { usePredictions } from '../../hooks/usePredictions'
 import { submitPrediction } from '../../services/predictionsService'
 import { crowdSplit, predictionPoints, POINTS_EXACT } from '../../utils/bolao'
@@ -32,16 +33,18 @@ export default function PalpiteWidget({ match, profile }) {
   if (match.status === 'scheduled') {
     if (!profile) {
       return (
-        <Link to="/bolao" className="block text-center text-sm bg-brand/5 border border-dashed border-brand/40 text-brand font-semibold rounded-xl px-3 py-3">
-          🎯 Entre no Bolão pra dar seu palpite neste jogo →
+        <Link to="/bolao" className="flex items-center justify-center gap-2 text-sm bg-brand/5 border border-dashed border-brand/40 text-brand font-semibold rounded-xl px-3 py-3">
+          <SoccerBallIcon className="w-4 h-4" />
+          Entre no Bolão pra dar seu palpite neste jogo →
         </Link>
       )
     }
     if (mine) {
       return (
         <div>
-          <p className="text-center text-sm font-bold text-brand-deep bg-brand/5 border border-brand/20 rounded-xl px-3 py-2.5">
-            ✅ Seu palpite: <span className="score-number">{mine.scoreA} × {mine.scoreB}</span>
+          <p className="flex items-center justify-center gap-1.5 text-sm font-bold text-brand-deep bg-brand/5 border border-brand/20 rounded-xl px-3 py-2.5">
+            <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
+            Seu palpite: <span className="score-number">{mine.scoreA} × {mine.scoreB}</span>
           </p>
           <CrowdBar match={match} crowd={crowd} />
         </div>
@@ -54,8 +57,9 @@ export default function PalpiteWidget({ match, profile }) {
           <span className="text-brand-mist font-bold">×</span>
           <Stepper value={scoreB} onChange={setScoreB} label={match.teamB?.name} />
         </div>
-        <Button onClick={save} disabled={saving} className="w-full mt-3 text-sm py-2">
-          {saving ? 'Cravando...' : 'Cravar palpite 🎯'}
+        <Button onClick={save} disabled={saving} className="w-full mt-3 text-sm py-2 gap-1.5">
+          <SoccerBallIcon className="w-4 h-4" />
+          {saving ? 'Cravando...' : 'Cravar palpite'}
         </Button>
         {error && <p className="text-xs text-red-500 text-center mt-2">{error}</p>}
         <p className="text-[10px] text-brand-steel text-center mt-2">
@@ -124,7 +128,10 @@ function CrowdBar({ match, crowd }) {
         <div style={{ width: `${crowd.draw}%` }} className="bg-brand-mist/60" />
         <div style={{ width: `${crowd.b}%`, backgroundColor: match.teamB?.color || '#182750' }} />
       </div>
-      <p className="text-[10px] text-brand-steel text-center mt-1">🔥 {crowd.total} {crowd.total === 1 ? 'palpite' : 'palpites'} da torcida</p>
+      <p className="text-[10px] text-brand-steel text-center mt-1 inline-flex items-center gap-1 w-full justify-center">
+        <FireIcon className="w-3 h-3 text-amber-500" />
+        {crowd.total} {crowd.total === 1 ? 'palpite' : 'palpites'} da torcida
+      </p>
     </div>
   )
 }

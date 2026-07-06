@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { FireIcon } from '../common/Icons'
 import { useEventSettings } from '../../hooks/useEventSettings'
 import { useAuth } from '../../context/AuthContext'
 import { formatShortDate } from '../../utils/formatDate'
@@ -20,27 +21,26 @@ export default function EventGate({ children }) {
 
 function SplashScreen() {
   return (
-    <div className="min-h-screen jipd-gradient circuit-lines flex items-center justify-center">
-      <div className="animate-pop-in bg-white rounded-3xl p-3 shadow-glow">
-        <img src="/jipd-logo.jpeg" alt="JIPD 2026" className="w-40 h-40 object-contain rounded-2xl" />
-      </div>
+    <div className="min-h-screen jipd-hero flex items-center justify-center">
+      <img src="/jipd-logo.png" alt="JIPD 2026" className="animate-pop-in w-44 logo-glow" />
     </div>
   )
 }
 
 function GateScreen({ start, end }) {
   return (
-    <div className="min-h-screen jipd-gradient circuit-lines flex flex-col items-center justify-center px-6 text-center">
+    <div className="min-h-screen jipd-hero flex flex-col items-center justify-center px-6 text-center">
       <div className="animate-pop-in flex flex-col items-center">
-        <div className="bg-white rounded-3xl p-3.5 shadow-glow">
-          <img src="/jipd-logo.jpeg" alt="JIPD 2026 — Jogos Internos Porto Digital" className="w-52 h-52 object-contain rounded-2xl" />
-        </div>
+        <img src="/jipd-logo.png" alt="JIPD 2026 — Jogos Internos Porto Digital" className="w-56 logo-glow" />
         <p className="mt-8 text-brand-mist text-sm font-medium uppercase tracking-widest">Os jogos vêm aí</p>
         <p className="mt-2 text-white font-display font-extrabold text-2xl">
           Jogos de {formatShortDate(start)}{end ? ` a ${formatShortDate(end)}` : ''}
         </p>
         <Countdown target={start} />
-        <p className="mt-10 text-brand-mist/70 text-xs">ETE Porto Digital · Volte no dia dos jogos! 🔥</p>
+        <p className="mt-10 text-brand-mist/70 text-xs inline-flex items-center gap-1.5">
+          ETE Porto Digital · Volte no dia dos jogos!
+          <FireIcon className="w-3.5 h-3.5 text-amber-400" />
+        </p>
       </div>
     </div>
   )

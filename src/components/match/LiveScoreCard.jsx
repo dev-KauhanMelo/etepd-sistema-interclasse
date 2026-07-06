@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import MatchStatusBadge from './MatchStatusBadge'
 import TeamCrest from './TeamCrest'
+import FlipScore from './FlipScore'
 import { formatTime } from '../../utils/formatDate'
 
 // O card-assinatura do site: escudo de cada turma em cima do nome
@@ -21,10 +22,10 @@ export default function LiveScoreCard({ match }) {
           </div>
           <div className="flex items-center justify-between gap-2">
             <TeamSide team={match.teamA} />
-            <div className="flex items-baseline gap-2 score-number text-4xl text-brand-navy">
-              <span>{match.scoreA ?? 0}</span>
-              <span className="text-brand-mist text-2xl not-italic font-bold">×</span>
-              <span>{match.scoreB ?? 0}</span>
+            <div className="flex items-center gap-1.5">
+              <FlipScore value={match.scoreA} size="md" />
+              <span className="text-brand-mist text-lg font-bold px-0.5">×</span>
+              <FlipScore value={match.scoreB} size="md" />
             </div>
             <TeamSide team={match.teamB} />
           </div>

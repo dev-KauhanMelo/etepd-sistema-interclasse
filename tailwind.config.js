@@ -21,8 +21,8 @@ export default {
         finished: '#5A6C8C',
       },
       fontFamily: {
-        display: ['"Archivo"', 'sans-serif'],
-        sans: ['"Inter"', 'sans-serif'],
+        display: ['"Cabinet Grotesk"', 'sans-serif'],
+        sans: ['"General Sans"', 'sans-serif'],
       },
       boxShadow: {
         card: '0 1px 3px rgba(16, 48, 110, 0.08), 0 4px 16px rgba(16, 48, 110, 0.06)',
