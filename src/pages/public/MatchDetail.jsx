@@ -34,23 +34,23 @@ export default function MatchDetail() {
       <BackButton className="mb-3" />
 
       {/* Painel de placar estilo arena */}
-      <div className={`rounded-3xl overflow-hidden shadow-card animate-pop-in ${isLive ? 'jipd-hero' : 'bg-white border border-brand-mist/25'}`}>
+      <div className="rounded-3xl overflow-hidden shadow-card animate-pop-in bg-white border border-brand-mist/25">
         {isLive && <div className="h-1 live-bar" />}
-        <div className="p-6">
+        <div className="p-5">
           <div className="flex items-center justify-center gap-2 mb-1">
             <MatchStatusBadge status={match.status} />
           </div>
-          <p className={`text-center text-xs font-bold uppercase tracking-widest mb-5 ${isLive ? 'text-brand-mist' : 'text-brand-steel'}`}>
+          <p className="text-center text-xs font-bold uppercase tracking-widest mb-4 text-brand-steel">
             {PHASE_LABELS[match.phase] || 'Partida'} · {match.location}
           </p>
 
           <div className="flex items-center justify-between gap-2">
-            <TeamCol team={match.teamA} dark={isLive} />
+            <TeamCol team={match.teamA} />
             <ScoreBoard scoreA={match.scoreA} scoreB={match.scoreB} />
-            <TeamCol team={match.teamB} dark={isLive} />
+            <TeamCol team={match.teamB} />
           </div>
 
-          <p className={`text-center text-xs mt-5 ${isLive ? 'text-brand-mist/80' : 'text-brand-steel'}`}>
+          <p className="text-center text-xs mt-4 text-brand-steel">
             {formatDateTime(match.scheduledAt)}
           </p>
         </div>
@@ -90,11 +90,11 @@ export default function MatchDetail() {
   )
 }
 
-function TeamCol({ team, dark = false }) {
+function TeamCol({ team }) {
   return (
     <div className="flex-1 flex flex-col items-center gap-2 min-w-0">
       <TeamCrest team={team} size="md" />
-      <p className={`text-xs font-bold truncate max-w-full ${dark ? 'text-white' : 'text-brand-deep'}`}>{team?.name || '-'}</p>
+      <p className="text-xs font-bold truncate max-w-full text-brand-deep">{team?.name || '-'}</p>
     </div>
   )
 }

@@ -108,11 +108,16 @@ html, body, #root { height: 100%; }
   100% { transform: rotateX(0deg); }
 }
 
-/* Corpo trapezoidal do placar (mais largo embaixo, como o de mesa) */
+/* Corpo trapezoidal do placar (mais largo embaixo, como o de mesa).
+   O segundo drop-shadow é o brilho quente amarelo embaixo do placar. */
 .board-body {
   background: #202024;
   clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%);
-  filter: drop-shadow(0 3px 6px rgba(14, 20, 29, 0.35));
+}
+.board-glow {
+  filter:
+    drop-shadow(0 3px 6px rgba(14, 20, 29, 0.35))
+    drop-shadow(0 10px 24px rgba(245, 234, 21, 0.30));
 }
 .board-base {
   height: 9px;
