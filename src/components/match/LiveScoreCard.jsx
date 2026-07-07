@@ -22,10 +22,10 @@ export default function LiveScoreCard({ match }) {
           </div>
           <div className="flex items-center justify-between gap-2">
             <TeamSide team={match.teamA} />
-            <div className="flex items-center gap-1.5">
-              <FlipScore value={match.scoreA} size="md" />
-              <span className="text-brand-mist text-lg font-bold px-0.5">×</span>
-              <FlipScore value={match.scoreB} size="md" />
+            <div className="flex items-center gap-1">
+              <FlipScore value={match.scoreA} size="sm" />
+              <span className="text-brand-mist text-sm font-bold px-0.5">×</span>
+              <FlipScore value={match.scoreB} size="sm" />
             </div>
             <TeamSide team={match.teamB} />
           </div>

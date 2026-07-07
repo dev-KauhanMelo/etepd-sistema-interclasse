@@ -11,7 +11,7 @@ export function useClasses() {
     const unsub = onSnapshot(q, (snap) => {
       setClasses(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
       setLoading(false)
-    })
+    }, (error) => { console.error('Erro ao carregar turmas:', error); setLoading(false) })
     return unsub
   }, [])
 

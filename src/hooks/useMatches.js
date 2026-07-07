@@ -11,7 +11,7 @@ export function useMatches() {
     const unsub = onSnapshot(q, (snap) => {
       setMatches(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
       setLoading(false)
-    })
+    }, (error) => { console.error('Erro ao carregar jogos:', error); setLoading(false) })
     return unsub
   }, [])
 

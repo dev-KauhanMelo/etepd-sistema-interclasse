@@ -13,7 +13,7 @@ export function usePredictions(matchId) {
     const unsub = onSnapshot(q, (snap) => {
       setPredictions(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
       setLoading(false)
-    })
+    }, (error) => { console.error('Erro ao carregar palpites:', error); setLoading(false) })
     return unsub
   }, [matchId])
 
@@ -29,7 +29,7 @@ export function useAllPredictions() {
     const unsub = onSnapshot(collection(db, 'predictions'), (snap) => {
       setPredictions(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
       setLoading(false)
-    })
+    }, (error) => { console.error('Erro ao carregar palpites:', error); setLoading(false) })
     return unsub
   }, [])
 

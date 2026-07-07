@@ -14,7 +14,7 @@ export function useStandings(modalityId) {
       rows.sort((a, b) => (b.points - a.points) || (((b.scoredFor || 0) - (b.scoredAgainst || 0)) - ((a.scoredFor || 0) - (a.scoredAgainst || 0))))
       setStandings(rows)
       setLoading(false)
-    })
+    }, (error) => { console.error('Erro ao carregar classificação:', error); setLoading(false) })
     return unsub
   }, [modalityId])
 

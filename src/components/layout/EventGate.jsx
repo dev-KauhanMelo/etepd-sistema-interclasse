@@ -22,7 +22,7 @@ export default function EventGate({ children }) {
 function SplashScreen() {
   return (
     <div className="min-h-screen jipd-hero flex items-center justify-center">
-      <img src="/jipd-logo.png" alt="JIPD 2026" className="animate-pop-in w-44 logo-glow" />
+      <img src="/jipd-logo.png" alt="JIPD 2026" className="animate-pop-in w-44" />
     </div>
   )
 }
@@ -31,7 +31,7 @@ function GateScreen({ start, end }) {
   return (
     <div className="min-h-screen jipd-hero flex flex-col items-center justify-center px-6 text-center">
       <div className="animate-pop-in flex flex-col items-center">
-        <img src="/jipd-logo.png" alt="JIPD 2026 — Jogos Internos Porto Digital" className="w-56 logo-glow" />
+        <img src="/jipd-logo.png" alt="JIPD 2026 — Jogos Internos Porto Digital" className="w-56" />
         <p className="mt-8 text-brand-mist text-sm font-medium uppercase tracking-widest">Os jogos vêm aí</p>
         <p className="mt-2 text-white font-display font-extrabold text-2xl">
           Jogos de {formatShortDate(start)}{end ? ` a ${formatShortDate(end)}` : ''}

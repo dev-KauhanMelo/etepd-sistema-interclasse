@@ -11,7 +11,7 @@ export function useModalities() {
     const unsub = onSnapshot(q, (snap) => {
       setModalities(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
       setLoading(false)
-    })
+    }, (error) => { console.error('Erro ao carregar modalidades:', error); setLoading(false) })
     return unsub
   }, [])
 

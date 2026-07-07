@@ -25,7 +25,7 @@ export default function Home() {
     <div className="p-4">
       {/* Hero de boas-vindas */}
       <div className="jipd-hero rounded-3xl px-6 pt-7 pb-7 text-center shadow-card animate-pop-in">
-        <img src="/jipd-logo.png" alt="Logo JIPD" className="h-20 w-auto mx-auto logo-glow" />
+        <img src="/jipd-logo.png" alt="Logo JIPD" className="h-20 w-auto mx-auto" />
         <p className="mt-5 text-brand-light text-xs font-bold tracking-[0.35em] uppercase">Bem-vindo ao</p>
         <h1 className="headline text-5xl text-white mt-1 leading-none">JIPD 2026</h1>
         <p className="mt-2 text-brand-mist text-sm font-medium">Jogos Internos · ETE Porto Digital</p>

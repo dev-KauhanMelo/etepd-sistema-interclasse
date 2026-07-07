@@ -1,9 +1,10 @@
-// Placar estilo "mesa manual": painel escuro com linha no meio.
-// Quando o número muda, a folhinha vira (animação flip-turn no CSS).
+// Cartão de número do placar de mesa: painel preto, dígito amarelo,
+// linha no meio. Quando o número muda, a folhinha vira (flip-turn no CSS).
 // O key={value} força o React a recriar o dígito, disparando a animação.
 const sizes = {
-  md: { panel: 'w-11 h-14', digit: 'text-3xl' },
-  lg: { panel: 'w-20 h-24', digit: 'text-6xl' },
+  sm: { panel: 'w-8 h-10', digit: 'text-xl' },
+  md: { panel: 'w-10 h-12', digit: 'text-2xl' },
+  lg: { panel: 'w-14 h-[4.25rem]', digit: 'text-4xl' },
 }
 
 export default function FlipScore({ value, size = 'md' }) {

@@ -6,8 +6,9 @@ import { SoccerBallIcon } from '../../components/common/Icons'
 import { getFanProfile } from '../../utils/fanProfile'
 import MatchStatusBadge from '../../components/match/MatchStatusBadge'
 import TeamCrest from '../../components/match/TeamCrest'
-import FlipScore from '../../components/match/FlipScore'
+import ScoreBoard from '../../components/match/ScoreBoard'
 import Loader from '../../components/common/Loader'
+import BackButton from '../../components/common/BackButton'
 import { useMatch } from '../../hooks/useMatch'
 import { formatDateTime } from '../../utils/formatDate'
 import { PHASE_LABELS } from '../../utils/constants'
@@ -30,6 +31,8 @@ export default function MatchDetail() {
 
   return (
     <div className="p-4">
+      <BackButton className="mb-3" />
+
       {/* Painel de placar estilo arena */}
       <div className={`rounded-3xl overflow-hidden shadow-card animate-pop-in ${isLive ? 'jipd-hero' : 'bg-white border border-brand-mist/25'}`}>
         {isLive && <div className="h-1 live-bar" />}
@@ -43,11 +46,7 @@ export default function MatchDetail() {
 
           <div className="flex items-center justify-between gap-2">
             <TeamCol team={match.teamA} dark={isLive} />
-            <div className="flex items-center gap-2">
-              <FlipScore value={match.scoreA} size="lg" />
-              <span className={`text-2xl font-bold ${isLive ? 'text-brand-mist/60' : 'text-brand-mist'}`}>×</span>
-              <FlipScore value={match.scoreB} size="lg" />
-            </div>
+            <ScoreBoard scoreA={match.scoreA} scoreB={match.scoreB} />
             <TeamCol team={match.teamB} dark={isLive} />
           </div>
 
@@ -94,8 +93,8 @@ export default function MatchDetail() {
 function TeamCol({ team, dark = false }) {
   return (
     <div className="flex-1 flex flex-col items-center gap-2 min-w-0">
-      <TeamCrest team={team} size="lg" />
-      <p className={`text-sm font-bold truncate max-w-full ${dark ? 'text-white' : 'text-brand-deep'}`}>{team?.name || '-'}</p>
+      <TeamCrest team={team} size="md" />
+      <p className={`text-xs font-bold truncate max-w-full ${dark ? 'text-white' : 'text-brand-deep'}`}>{team?.name || '-'}</p>
     </div>
   )
 }
