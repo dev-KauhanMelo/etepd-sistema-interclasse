@@ -5,11 +5,14 @@ import EmptyState from '../../components/common/EmptyState'
 import Loader from '../../components/common/Loader'
 import TeamCrest from '../../components/match/TeamCrest'
 import { TrophyIcon, CrownIcon } from '../../components/common/Icons'
+import BracketBoard from '../../components/bracket/BracketBoard'
 import { useModalities } from '../../hooks/useModalities'
 import { useStandings } from '../../hooks/useStandings'
 import { useMatches } from '../../hooks/useMatches'
 import { useClasses } from '../../hooks/useClasses'
+import { useBracket } from '../../hooks/useBracket'
 import { PHASE_LABELS } from '../../utils/constants'
+import { mergeBracket } from '../../utils/bracket'
 
 export default function Standings() {
   const { modalities } = useModalities()
@@ -66,7 +69,7 @@ export default function Standings() {
 
               <Card className="p-0 overflow-hidden">
                 <table className="w-full text-sm">
-                  <thead>
+                  <thead>2°
                     <tr className="text-left text-brand-steel text-xs bg-brand-paper/70">
                       <th className="py-2.5 pl-4">#</th>
                       <th className="py-2.5">Turma</th>
@@ -100,34 +103,69 @@ export default function Standings() {
             </>
           )
         ) : (
-          phases.length === 0 ? (
-            <EmptyState icon={<TrophyIcon className="w-10 h-10" />} title="Chaveamento ainda não definido" subtitle="O mata-mata aparece aqui depois da fase de grupos" />
-          ) : (
-            phases.map((phase) => (
-              <div key={phase} className="mb-5">
-                <p className="headline text-sm text-brand-steel mb-2">{PHASE_LABELS[phase]}</p>
-                {bracketMatches.filter((m) => m.phase === phase).map((m) => (
-                  <Card key={m.id} className="mb-2 flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-2 flex-1 min-w-0">
-                      <TeamCrest team={m.teamA} size="sm" />
-                      <span className="text-xs font-bold text-brand-deep truncate">{m.teamA?.name}</span>
-                    </span>
-                    <span className="score-number text-xl text-brand-navy shrink-0">
-                      {m.scoreA ?? 0} <span className="text-brand-mist text-sm">×</span> {m.scoreB ?? 0}
-                    </span>
-                    <span className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-                      <span className="text-xs font-bold text-brand-deep truncate">{m.teamB?.name}</span>
-                      <TeamCrest team={m.teamB} size="sm" />
-                    </span>
-                  </Card>
-                ))}
-              </div>
-            ))
-          )
+          <BracketTab
+            modality={modalities.find((m) => m.id === activeModality)}
+            classes={classes}
+            phases={phases}
+            bracketMatches={bracketMatches}
+          />
         )}
       </div>
     </div>
   )
+}
+
+function BracketTab({ modality, classes, phases, bracketMatches }) {
+  const { bracket, loading, loadedFor } = useBracket(modality?.id)
+
+  // Espera os dados serem os DESTA modalidade — no instante da troca o hook
+  // ainda pode estar segurando o chaveamento da modalidade anterior.
+  if (loading || loadedFor !== modality?.id) return <Loader />
+
+  if (bracket?.published) {
+    const model = mergeBracket(bracket)
+    return (
+      <div className="animate-pop-in">
+        <BracketBoard
+          title={modality?.name}
+          subtitle={model.subtitle || `${modality?.name || 'Modalidade'} · Mata-mata`}
+          games={model.games}
+          classes={classes}
+        />
+      </div>
+    )
+  }
+
+  if (phases.length === 0) {
+    return (
+      <EmptyState
+        icon={<TrophyIcon className="w-10 h-10" />}
+        title="Chaveamento ainda não definido"
+        subtitle="O mata-mata aparece aqui depois da fase de grupos"
+      />
+    )
+  }
+
+  return phases.map((phase) => (
+    <div key={phase} className="mb-5">
+      <p className="headline text-sm text-brand-steel mb-2">{PHASE_LABELS[phase]}</p>
+      {bracketMatches.filter((m) => m.phase === phase).map((m) => (
+        <Card key={m.id} className="mb-2 flex items-center justify-between gap-2">
+          <span className="flex items-center gap-2 flex-1 min-w-0">
+            <TeamCrest team={m.teamA} size="sm" />
+            <span className="text-xs font-bold text-brand-deep truncate">{m.teamA?.name}</span>
+          </span>
+          <span className="score-number text-xl text-brand-navy shrink-0">
+            {m.scoreA ?? 0} <span className="text-brand-mist text-sm">×</span> {m.scoreB ?? 0}
+          </span>
+          <span className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+            <span className="text-xs font-bold text-brand-deep truncate">{m.teamB?.name}</span>
+            <TeamCrest team={m.teamB} size="sm" />
+          </span>
+        </Card>
+      ))}
+    </div>
+  ))
 }
 
 const medalColors = { 1: 'text-amber-400', 2: 'text-slate-400', 3: 'text-amber-700' }
@@ -170,3 +208,4 @@ function TabButton({ active, children, onClick }) {
     </button>
   )
 }
+

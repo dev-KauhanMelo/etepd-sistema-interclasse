@@ -44,6 +44,18 @@ html, body, #root { height: 100%; }
   /* Esconde a barra de rolagem dos filtros horizontais */
   .scrollbar-none { scrollbar-width: none; }
   .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  /* Palco do chaveamento: fundo escuro com padrão de losangos (as duas
+     últimas camadas fazem o "hexágono"). É o único bloco do site em tema
+     escuro — o mata-mata é um momento de torneio. */
+  .bracket-stage {
+    background-color: #0E141D;
+    background-image:
+      linear-gradient(160deg, rgba(5, 82, 203, 0.16) 0%, rgba(14, 20, 29, 0) 55%),
+      linear-gradient(60deg, rgba(255, 255, 255, 0.035) 25%, transparent 25.5%, transparent 74.5%, rgba(255, 255, 255, 0.035) 75%, rgba(255, 255, 255, 0.035)),
+      linear-gradient(120deg, rgba(255, 255, 255, 0.035) 25%, transparent 25.5%, transparent 74.5%, rgba(255, 255, 255, 0.035) 75%, rgba(255, 255, 255, 0.035));
+    background-size: auto, 46px 80px, 46px 80px;
+  }
 }
 
 .pulse-live {

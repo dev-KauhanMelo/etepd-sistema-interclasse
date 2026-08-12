@@ -17,6 +17,9 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 gap-3 mb-6">
         <Link to="/admin/jogos"><Card className="text-center text-sm font-medium text-brand">+ Novo jogo</Card></Link>
         <Link to="/admin/avisos"><Card className="text-center text-sm font-medium text-brand">+ Novo aviso</Card></Link>
+        <Link to="/admin/chaveamento" className="col-span-2">
+          <Card className="text-center text-sm font-medium text-brand">🏆 Montar chaveamento</Card>
+        </Link>
       </div>
 
       <p className="text-sm font-semibold text-slate-500 mb-2">Jogos de hoje</p>

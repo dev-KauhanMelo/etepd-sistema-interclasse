@@ -11,6 +11,7 @@ service cloud.firestore {
     match /modalities/{doc}    { allow read: if true; allow write: if isAdmin(); }
     match /matches/{doc}       { allow read: if true; allow write: if isAdmin(); }
     match /standings/{doc}     { allow read: if true; allow write: if isAdmin(); }
+    match /brackets/{doc}      { allow read: if true; allow write: if isAdmin(); }
     match /announcements/{doc} { allow read: if true; allow write: if isAdmin(); }
     match /settings/{doc}      { allow read: if true; allow write: if isAdmin(); }
 

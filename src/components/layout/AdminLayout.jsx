@@ -6,6 +6,7 @@ const links = [
   { to: '/admin', label: 'Painel' },
   { to: '/admin/jogos', label: 'Jogos' },
   { to: '/admin/ranking', label: 'Ranking' },
+  { to: '/admin/chaveamento', label: 'Chaveamento' },
   { to: '/admin/avisos', label: 'Avisos' },
   { to: '/admin/cadastro', label: 'Turmas/Modalidades' },
   { to: '/admin/config', label: 'Configurações' },
