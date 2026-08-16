@@ -8,7 +8,7 @@ import { useStandings } from '../../hooks/useStandings'
 import { upsertStanding } from '../../services/standingsService'
 import { updateModality } from '../../services/modalitiesService'
 import { STANDINGS_FORMAT } from '../../utils/constants'
-import { fieldsFor, sortStandings } from '../../utils/standings'
+import { fieldsFor, sortStandings, hasTable, roundAverage, formatTime } from '../../utils/standings'
 
 // Painel da classificação. Duas caras conforme o formato da modalidade:
 // - clássico: pontos, vitórias, empates, derrotas (futsal, vôlei…)
@@ -21,7 +21,7 @@ export default function ManageStandings() {
   const [modalityId, setModalityId] = useState('')
   const activeModality = modalityId || modalities[0]?.id
   const modality = modalities.find((m) => m.id === activeModality)
-  const format = modality?.standingsFormat === 'pontos' ? 'pontos' : 'classico'
+  const format = modality?.standingsFormat || 'mata-mata'
   const fields = fieldsFor(format)
 
   const { standings, loading, loadedFor } = useStandings(activeModality, format)
@@ -59,13 +59,17 @@ export default function ManageStandings() {
   }
 
   function setValue(classId, key, raw) {
-    const value = Math.max(0, Number(raw) || 0)
+    // tempo do cubo vem com centésimos ("45,28" ou "45.28")
+    const parsed = Number(String(raw).replace(',', '.'))
+    const value = Math.max(0, Number.isFinite(parsed) ? parsed : 0)
     setDraft((d) => ({ ...d, [classId]: { ...d[classId], [key]: value } }))
     setDirty(true)
   }
 
   function bump(classId, key, delta) {
-    setValue(classId, key, (draft[classId]?.[key] || 0) + delta)
+    const atual = draft[classId]?.[key] || 0
+    // no formato por tempo o passo é 1 segundo, e o valor mantém os decimais
+    setValue(classId, key, Math.max(0, Number((atual + delta).toFixed(2))))
   }
 
   async function handleSaveAll() {
@@ -161,7 +165,15 @@ export default function ManageStandings() {
         </div>
       </Card>
 
-      {classes.length === 0 ? (
+      {!hasTable(format) ? (
+        <Card className="text-sm text-slate-600">
+          <p className="font-semibold mb-1">Esta modalidade é mata-mata.</p>
+          <p className="text-slate-500">
+            Quem perde está fora, então não existe tabela de classificação para preencher —
+            o que vale é o <strong>chaveamento</strong>. Use a aba Chaveamento para marcar os vencedores.
+          </p>
+        </Card>
+      ) : classes.length === 0 ? (
         <Card className="text-sm text-slate-500">
           Cadastre as turmas primeiro em <strong>Turmas/Modalidades</strong>.
         </Card>
@@ -176,8 +188,9 @@ export default function ManageStandings() {
                   <th className="py-2 pl-4 text-left w-8">#</th>
                   <th className="py-2 text-left">Turma</th>
                   {fields.map((f) => (
-                    <th key={f.key} className="py-2 text-center w-10">{f.short}</th>
+                    <th key={f.key} className="py-2 text-center w-12">{f.short}</th>
                   ))}
+                  {format === 'tempo' && <th className="py-2 text-center w-14">MÉDIA</th>}
                 </tr>
               </thead>
               <tbody>
@@ -186,8 +199,15 @@ export default function ManageStandings() {
                     <td className={`py-1.5 pl-4 font-bold ${i === 0 ? 'text-amber-500' : 'text-slate-500'}`}>{i + 1}</td>
                     <td className="py-1.5 font-medium text-slate-700">{row.className}</td>
                     {fields.map((f) => (
-                      <td key={f.key} className="py-1.5 text-center text-slate-500">{row[f.key] || 0}</td>
+                      <td key={f.key} className="py-1.5 text-center text-slate-500">
+                        {format === 'tempo' ? formatTime(row[f.key]) : (row[f.key] || 0)}
+                      </td>
                     ))}
+                    {format === 'tempo' && (
+                      <td className="py-1.5 text-center font-bold text-brand">
+                        {roundAverage(row) === null ? '—' : formatTime(roundAverage(row))}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -217,7 +237,8 @@ export default function ManageStandings() {
                         </button>
                         <input
                           type="number"
-                          inputMode="numeric"
+                          inputMode="decimal"
+                          step={format === 'tempo' ? '0.01' : '1'}
                           min="0"
                           value={draft[c.id]?.[f.key] ?? 0}
                           onChange={(e) => setValue(c.id, f.key, e.target.value)}

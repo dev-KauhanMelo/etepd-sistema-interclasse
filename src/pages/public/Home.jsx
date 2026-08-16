@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Loader from '../../components/common/Loader'
+import Credits from '../../components/layout/Credits'
 import TeamCrest from '../../components/match/TeamCrest'
 import { useMatches } from '../../hooks/useMatches'
 import { useModalities } from '../../hooks/useModalities'
@@ -147,6 +148,7 @@ export default function Home() {
           </div>
         </>
       )}
+      <Credits className="mt-8 mb-2" />
     </div>
   )
 }

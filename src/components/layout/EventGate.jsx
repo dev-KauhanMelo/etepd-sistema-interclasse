@@ -3,6 +3,7 @@ import { FireIcon } from '../common/Icons'
 import { useEventSettings } from '../../hooks/useEventSettings'
 import { useAuth } from '../../context/AuthContext'
 import { formatShortDate } from '../../utils/formatDate'
+import Credits from './Credits'
 
 // A "tela-bloqueio" sugerida pela professora: se o estudante acessar
 // antes do período dos jogos, vê a logo do JIPD + as datas + contagem
@@ -68,10 +69,11 @@ function GateScreen({ start, end }) {
           {formatShortDate(start)} — {end ? formatShortDate(end) : ''} · ETE PD + UNIBRA
         </p>
         <Countdown target={start} />
-        <p className="mt-10 text-arena-muted text-xs inline-flex items-center gap-1.5 font-bracket font-semibold tracking-wide">
+        <p className="mt-9 text-arena-muted text-xs inline-flex items-center gap-1.5 font-bracket font-semibold tracking-wide">
           Volte no dia dos jogos!
           <FireIcon className="w-3.5 h-3.5 text-gold" />
         </p>
+        <Credits className="mt-8" />
       </div>
       <div className="splash-bar absolute bottom-0 left-0 right-0 h-1" aria-hidden="true"><i /></div>
     </div>

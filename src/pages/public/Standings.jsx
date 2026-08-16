@@ -6,6 +6,7 @@ import TeamCrest from '../../components/match/TeamCrest'
 import { TrophyIcon, CrownIcon } from '../../components/common/Icons'
 import BracketBoard from '../../components/bracket/BracketBoard'
 import PointsTable from '../../components/standings/PointsTable'
+import TimeTable from '../../components/standings/TimeTable'
 import GroupStage from '../../components/bracket/GroupStage'
 import { useModalities } from '../../hooks/useModalities'
 import FilterBar from '../../components/common/FilterBar'
@@ -14,7 +15,12 @@ import { useMatches } from '../../hooks/useMatches'
 import { useClasses } from '../../hooks/useClasses'
 import { useBracket } from '../../hooks/useBracket'
 import { PHASE_LABELS } from '../../utils/constants'
+import { hasTable } from '../../utils/standings'
 import { mergeBracket } from '../../utils/bracket'
+
+// Modalidades femininas de Esportes que são fase de grupos (edital 3.3).
+// Handebol, Queimado e Barra Bandeira ficam de fora — essas são mata-mata.
+const GRUPOS_FEMININO = ['voleibol', 'basquete', 'futsal', 'futmesa', 'quadrado vôlei', 'quadrado volei']
 
 export default function Standings() {
   const { modalities } = useModalities()
@@ -27,10 +33,27 @@ export default function Standings() {
   const activeModality = isGeral ? modalities[0]?.id : (modalityId || modalities[0]?.id)
   const modality = modalities.find((m) => m.id === activeModality)
   // Free Fire usa a tabela por pontos (LBFF); o resto segue o formato clássico.
-  const format = modality?.standingsFormat === 'pontos' ? 'pontos' : 'classico'
-  // Free Fire é disputado por pontuação, não por chave: a aba de chaveamento
-  // não se aplica e some (como já acontece na classificação Geral).
-  const semChaveamento = isGeral || format === 'pontos'
+  const format = modality?.standingsFormat || 'mata-mata'
+  // Free Fire e Cubo Mágico são disputados por pontuação/tempo, não por
+  // chave: a aba de chaveamento não se aplica e some (como na visão Geral).
+  const semChaveamento = isGeral || format === 'pontos' || format === 'tempo'
+  // Mata-mata puro não tem tabela nenhuma — só o chaveamento.
+  const semTabela = !isGeral && !hasTable(format)
+  // Esportes com disputa feminina em fase de grupos (edital 3.3) ganham uma
+  // aba própria: no masculino a mesma modalidade é mata-mata, então as duas
+  // disputas não cabem na mesma tabela.
+  const temFeminino = !isGeral && GRUPOS_FEMININO.some((g) => (modality?.name || '').toLowerCase().includes(g))
+
+  // Abas disponíveis para esta modalidade
+  const tabs = isGeral
+    ? []
+    : [
+        !semTabela && { key: 'classificacao', label: 'Classificação' },
+        !semChaveamento && { key: 'chaveamento', label: 'Chaveamento' },
+        temFeminino && { key: 'feminino', label: 'Feminino' },
+      ].filter(Boolean)
+  // Se a aba escolhida não existe nesta modalidade, cai na primeira
+  const activeTab = tabs.some((t) => t.key === tab) ? tab : tabs[0]?.key
   const { standings: modStandings, loading: modLoading } = useStandings(activeModality, format)
   const { rows: allRows, loading: allLoading } = useAllStandings()
   const { matches } = useMatches()
@@ -75,10 +98,13 @@ export default function Standings() {
       </div>
 
       <div className="p-4 pt-2">
-        {!semChaveamento && (
+        {tabs.length > 1 && (
           <div className="cut-corner-sm bg-arena-panel p-1 flex gap-1 mb-4">
-            <TabButton active={tab === 'classificacao'} onClick={() => setTab('classificacao')}>Classificação</TabButton>
-            <TabButton active={tab === 'chaveamento'} onClick={() => setTab('chaveamento')}>Chaveamento</TabButton>
+            {tabs.map((t) => (
+              <TabButton key={t.key} active={activeTab === t.key} onClick={() => setTab(t.key)}>
+                {t.label}
+              </TabButton>
+            ))}
           </div>
         )}
         {isGeral && (
@@ -87,11 +113,22 @@ export default function Standings() {
           </p>
         )}
 
-        {semChaveamento || tab === 'classificacao' ? (
+        {activeTab === 'feminino' ? (
+          <GroupStage title={`${modality?.name} · Fase de grupos`} />
+        ) : activeTab === 'chaveamento' ? (
+          <BracketTab
+            modality={modality}
+            classes={classes}
+            phases={phases}
+            bracketMatches={bracketMatches}
+          />
+        ) : isGeral || activeTab === 'classificacao' ? (
           loading ? <Loader /> : standings.length === 0 ? (
             <EmptyState icon={<TrophyIcon className="w-10 h-10" />} title="Ranking ainda não disponível" subtitle="Os pontos aparecem aqui quando os jogos começarem" />
           ) : !isGeral && format === 'pontos' ? (
             <PointsTable standings={standings} teamOf={teamOf} title={modality?.name} subtitle={modality?.name} />
+          ) : !isGeral && format === 'tempo' ? (
+            <TimeTable standings={standings} teamOf={teamOf} subtitle={modality?.name} />
           ) : (
             <>
               {/* Pódio dos 3 primeiros */}
@@ -150,22 +187,12 @@ export default function Standings() {
               </div>
             </>
           )
-        ) : (
-          <BracketTab
-            modality={modalities.find((m) => m.id === activeModality)}
-            classes={classes}
-            phases={phases}
-            bracketMatches={bracketMatches}
-          />
-        )}
+        ) : null}
       </div>
     </div>
   )
 }
 
-// Modalidades femininas de Esportes que são fase de grupos (edital 3.3).
-// Handebol, Queimado e Barra Bandeira ficam de fora — essas são mata-mata.
-const GRUPOS_FEMININO = ['voleibol', 'basquete', 'futsal', 'futmesa', 'quadrado vôlei', 'quadrado volei']
 
 function BracketTab({ modality, classes, phases, bracketMatches }) {
   const { bracket, loading, loadedFor } = useBracket(modality?.id)
@@ -186,13 +213,6 @@ function BracketTab({ modality, classes, phases, bracketMatches }) {
         />
       </div>
     )
-  }
-
-  // Esportes femininos de fase de grupos: mostra a tabela de rodadas oficial
-  // enquanto a Comissão não publica um chaveamento próprio.
-  const nome = (modality?.name || '').toLowerCase()
-  if (GRUPOS_FEMININO.some((m) => nome.includes(m))) {
-    return <GroupStage title={`${modality?.name} · Fase de grupos`} />
   }
 
   if (phases.length === 0) {
