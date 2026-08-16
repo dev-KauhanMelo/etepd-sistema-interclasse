@@ -55,6 +55,7 @@ export default function ManageMatches() {
         onChange={setQuery}
         placeholder="Buscar turma, local ou modalidade…"
         className="mb-3"
+        light
       />
 
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">

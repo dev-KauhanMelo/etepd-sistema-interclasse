@@ -1,85 +1,105 @@
+import { useState } from 'react'
 import {
   CRONOGRAMA, VENUES, CATEGORY, EVENT_HOURS,
   dayLabel, isPastDay, isCurrentDay,
 } from '../../utils/cronograma'
 
-// Grade oficial do evento: que modalidade rola em qual espaço, em qual dia.
-// É o que o aluno olha pra saber "onde eu tenho que estar hoje".
-export default function ProgramGrid({ venueFilter = 'all' }) {
-  const days = CRONOGRAMA.filter((d) => venueFilter === 'all' || d.venue === venueFilter)
-
-  if (days.length === 0) {
-    return <p className="text-sm text-brand-steel text-center py-6">Nenhum dia para esse local.</p>
-  }
+// Grade oficial (Modo Arena): rail D1–D5 pra escolher o dia, e a programação
+// daquele dia por espaço. Sem horários por slot — a Comissão não os definiu,
+// então a grade mostra a ORDEM das modalidades em cada espaço.
+export default function ProgramGrid() {
+  const initial = CRONOGRAMA.find((d) => isCurrentDay(d.date)) || CRONOGRAMA.find((d) => !isPastDay(d.date)) || CRONOGRAMA[0]
+  const [selected, setSelected] = useState(initial.day)
+  const day = CRONOGRAMA.find((d) => d.day === selected)
+  const venue = VENUES[day.venue]
+  const today = isCurrentDay(day.date)
 
   return (
-    <div className="space-y-4">
-      {days.map((day) => {
-        const venue = VENUES[day.venue]
-        const today = isCurrentDay(day.date)
-        const past = isPastDay(day.date)
-
-        return (
-          <div
-            key={day.day}
-            className={`bg-white rounded-2xl shadow-card border overflow-hidden transition ${
-              today ? 'border-brand ring-2 ring-brand/20' : 'border-brand-mist/25'
-            } ${past ? 'opacity-60' : ''}`}
-          >
-            <div className={`px-4 py-3 flex items-center gap-3 ${today ? 'jipd-gradient' : 'bg-brand-paper/70'}`}>
-              <div className="min-w-0 flex-1">
-                <p className={`headline text-base leading-none ${today ? 'text-white' : 'text-brand-navy'}`}>
-                  Dia {day.day}
-                </p>
-                <p className={`text-xs mt-1 ${today ? 'text-white/80' : 'text-brand-steel'}`}>
-                  {dayLabel(day.date)} · {EVENT_HOURS.start} às {EVENT_HOURS.end}
-                </p>
-              </div>
-              <span
-                className={`shrink-0 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full ${
-                  today
-                    ? 'bg-white/20 text-white'
-                    : day.venue === 'unibra'
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'bg-brand/10 text-brand'
-                }`}
-              >
-                {venue.short}
+    <div>
+      {/* Rail D1–D5 */}
+      <div className="flex gap-2" role="tablist" aria-label="Dias do evento">
+        {CRONOGRAMA.map((d) => {
+          const active = d.day === selected
+          const past = isPastDay(d.date)
+          const current = isCurrentDay(d.date)
+          return (
+            <button
+              key={d.day}
+              role="tab"
+              aria-selected={active}
+              onClick={() => setSelected(d.day)}
+              className={`flex-1 text-center py-2 transition ${
+                active
+                  ? 'cut-corner-sm bg-gold'
+                  : `bg-arena-panel border border-white/[0.07] ${past ? 'opacity-55' : ''}`
+              } ${current && !active ? 'border-gold/40' : ''}`}
+            >
+              <span className={`block font-bracket-display text-[22px] leading-none ${active ? 'text-brand-ink' : 'text-white'}`}>
+                D{d.day}
               </span>
-              {today && (
-                <span className="shrink-0 text-[10px] font-bold uppercase bg-white text-brand px-2 py-1 rounded-full">
-                  Hoje
-                </span>
-              )}
-            </div>
+              <span className={`block font-bracket font-bold text-[9px] tracking-[0.1em] mt-0.5 ${active ? 'text-brand-ink/70' : 'text-arena-muted'}`}>
+                {VENUES[d.venue].short}
+              </span>
+            </button>
+          )
+        })}
+      </div>
 
-            <div className="divide-y divide-brand-paper">
-              {day.spaces.map((row) => (
-                <div key={row.space} className="flex items-stretch gap-2 px-3 py-2">
-                  <span className="w-24 shrink-0 flex items-center text-[11px] font-bold text-brand-steel uppercase leading-tight">
-                    {row.space}
+      {/* Cabeçalho do dia */}
+      <div className="flex items-center gap-2.5 mt-4 mb-2.5">
+        <span className={`font-bracket-display text-base tracking-wide ${today ? 'text-gold' : 'text-white'}`}>
+          {dayLabel(day.date).toUpperCase()}
+        </span>
+        {today && (
+          <span className="font-bracket font-bold text-[9px] tracking-[0.14em] text-brand-ink bg-gold px-1.5 py-0.5 uppercase">
+            Hoje
+          </span>
+        )}
+        <span className={`flex-1 h-px ${today ? 'bg-gold/25' : 'bg-white/[0.08]'}`} />
+        <span className="font-bracket font-bold text-[10px] tracking-[0.14em] text-arena-muted uppercase">
+          {venue.name} · {EVENT_HOURS.start}—{EVENT_HOURS.end}
+        </span>
+      </div>
+
+      {/* Espaços do dia */}
+      <div className={`flex flex-col gap-2 ${isPastDay(day.date) ? 'opacity-60' : ''}`}>
+        {day.spaces.map((row) => (
+          <div
+            key={row.space}
+            className="cut-tl bg-arena-panel border border-white/[0.07] px-3.5 py-[11px] flex items-center gap-3"
+          >
+            <span className="w-[86px] shrink-0 font-bracket-display text-[13px] text-white uppercase leading-tight tracking-wide">
+              {row.space}
+            </span>
+            <div className="flex-1 min-w-0 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+              {row.slots.map((slot, i) => (
+                <span key={`${slot.name}-${i}`} className="inline-flex items-center gap-1.5">
+                  <span className="font-bracket font-bold text-[15px] text-arena-text tracking-[0.04em]">
+                    {slot.name}
                   </span>
-                  <div className="flex-1 min-w-0 flex flex-wrap gap-1.5">
-                    {row.slots.map((slot, i) => (
-                      <span
-                        key={`${slot.name}-${i}`}
-                        className="inline-flex items-center gap-1.5 bg-brand-paper/80 border border-brand-mist/30 rounded-lg px-2.5 py-1.5 text-xs font-bold text-brand-deep"
-                      >
-                        {slot.name}
-                        {slot.category && (
-                          <span className="text-[9px] font-extrabold uppercase tracking-wide text-brand-steel bg-white rounded px-1 py-0.5">
-                            {CATEGORY[slot.category].short}
-                          </span>
-                        )}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                  {slot.category && <CategoryTag category={slot.category} />}
+                  {i < row.slots.length - 1 && <span className="text-arena-dim font-bold" aria-hidden="true">·</span>}
+                </span>
               ))}
             </div>
           </div>
-        )
-      })}
+        ))}
+      </div>
     </div>
+  )
+}
+
+// Tags de categoria com cor própria: MASC azul, FEM dourado, MISTO neutro.
+function CategoryTag({ category }) {
+  const skins = {
+    masc: 'bg-accent/[0.18] text-accent border-accent/40',
+    fem: 'bg-gold/[0.14] text-gold border-gold/40',
+    misto: 'bg-white/10 text-arena-text border-white/30',
+    ambos: 'bg-white/10 text-arena-text border-white/30',
+  }
+  return (
+    <span className={`font-bracket font-bold text-[10px] tracking-[0.1em] border px-2 py-0.5 ${skins[category]}`}>
+      {CATEGORY[category].short}
+    </span>
   )
 }

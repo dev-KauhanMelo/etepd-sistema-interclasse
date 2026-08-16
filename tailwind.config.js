@@ -16,7 +16,18 @@ export default {
           paper: '#EFF5F9',
           light: '#4D8DF7',
         },
-        live: '#EF4444',
+        // ===== Modo Arena (redesign 2026): tema escuro do site público =====
+        arena: {
+          bg: '#0B0F19',    // fundo de página
+          deep: '#0A0E16',  // topbar e bottom-nav
+          panel: '#121A2B', // cards/superfícies
+          ghost: '#0F1522', // card "fantasma" (agendados)
+          text: '#EFF5F9',  // texto principal
+          muted: '#8FA0BF', // secundário (6.6:1 no panel)
+          dim: '#66738C',   // SÓ rótulo grande/bold ou inativo (3.6:1)
+        },
+        accent: '#4D8DF7',  // acento frio (tags MASC, kickers)
+        live: '#FF3B3B',
         scheduled: '#0552CB',
         finished: '#5A6C8C',
         // Amarelo do placar de mesa, usado como "ouro" nas telas escuras
@@ -35,7 +46,7 @@ export default {
         glow: '0 0 24px rgba(5, 82, 203, 0.35)',
       },
       animation: {
-        'pop-in': 'pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+        'pop-in': 'pop-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both',
       },
       keyframes: {
         'pop-in': {

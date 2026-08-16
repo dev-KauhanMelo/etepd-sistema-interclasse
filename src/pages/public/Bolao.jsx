@@ -12,28 +12,35 @@ import { useMatches } from '../../hooks/useMatches'
 import { useAllPredictions } from '../../hooks/usePredictions'
 import { getFanProfile } from '../../utils/fanProfile'
 import { buildBolaoRanking } from '../../utils/bolao'
-import { formatTime, formatDayHeader } from '../../utils/formatDate'
+import SearchBar from '../../components/common/SearchBar'
+import { useModalities } from '../../hooks/useModalities'
+import { filterMatches } from '../../utils/matchFilters'
+import { matchTime, formatDayHeader } from '../../utils/formatDate'
 
 export default function Bolao() {
   const [profile, setProfile] = useState(getFanProfile())
   const [tab, setTab] = useState('palpites')
+  const [query, setQuery] = useState('')
+  const [modalityFilter, setModalityFilter] = useState('all')
   const { matches, loading } = useMatches()
+  const { modalities } = useModalities()
   const { predictions } = useAllPredictions()
 
   if (loading) return <Loader />
 
-  const open = matches
-    .filter((m) => m.status === 'scheduled')
-    .sort((a, b) => (a.scheduledAt?.seconds || 0) - (b.scheduledAt?.seconds || 0))
+  const open = filterMatches(
+    matches.filter((m) => m.status === 'scheduled'),
+    { query, modalityId: modalityFilter, modalities }
+  ).sort((a, b) => (a.scheduledAt?.seconds || 0) - (b.scheduledAt?.seconds || 0))
   const inPlay = matches.filter((m) => m.status === 'live')
   const ranking = buildBolaoRanking(predictions, matches)
 
   return (
     <div>
-      <Header title="Bolão JIPD" subtitle="Crave o placar, mostre que entende de bola e domine o ranking" />
+      <Header title="BOLÃO JIPD" subtitle="Crave o placar e domine o ranking" />
 
       <div className="p-4 pt-2">
-        <div className="flex gap-2 mb-4 bg-white rounded-2xl p-1 border border-brand-mist/30 shadow-card">
+        <div className="cut-corner-sm bg-arena-panel p-1 flex gap-1 mb-4">
           <TabButton active={tab === 'palpites'} onClick={() => setTab('palpites')}>
             <SoccerBallIcon className="w-4 h-4" /> Palpites
           </TabButton>
@@ -47,8 +54,8 @@ export default function Bolao() {
             {!profile ? (
               <ProfileSetup onDone={setProfile} />
             ) : (
-              <p className="text-sm text-brand-steel mb-3 inline-flex items-center gap-1.5">
-                Fala, <span className="font-bold text-brand-deep">{profile.name}</span>
+              <p className="text-sm text-arena-muted mb-3 inline-flex items-center gap-1.5 font-bracket font-semibold">
+                Fala, <span className="font-bold text-white">{profile.name}</span>
                 {profile.className ? ` (${profile.className})` : ''}! Bora cravar?
                 <FireIcon className="w-4 h-4 text-amber-500" />
               </p>
@@ -62,6 +69,15 @@ export default function Bolao() {
             )}
 
             <GroupTitle>Jogos abertos pra palpite</GroupTitle>
+            <SearchBar value={query} onChange={setQuery} placeholder="Buscar turma ou modalidade…" className="mb-2" />
+            <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-none">
+              <FilterChip active={modalityFilter === 'all'} onClick={() => setModalityFilter('all')}>Todas</FilterChip>
+              {modalities.map((m) => (
+                <FilterChip key={m.id} active={modalityFilter === m.id} onClick={() => setModalityFilter(m.id)}>
+                  {m.name}
+                </FilterChip>
+              ))}
+            </div>
             {open.length === 0 ? (
               <EmptyState
                 icon={<NodesIcon className="w-10 h-10" />}
@@ -86,7 +102,7 @@ function BolaoMatchCard({ match, profile }) {
       <div className="flex items-center justify-between mb-3">
         <MatchStatusBadge status={match.status} />
         <span className="text-xs font-medium text-brand-steel">
-          {formatDayHeader(match.scheduledAt)} · {formatTime(match.scheduledAt)}
+          {formatDayHeader(match.scheduledAt)} · {matchTime(match)}
         </span>
       </div>
       <div className="flex items-center justify-center gap-3 mb-3">
@@ -134,7 +150,7 @@ function RankingTab({ ranking, profile }) {
           return (
             <div
               key={r.userId}
-              className={`flex items-center gap-3 px-4 py-3 border-b border-brand-paper last:border-0 ${isMe ? 'bg-brand/5' : ''}`}
+              className={`flex items-center gap-3 px-4 py-3 border-b border-brand-paper last:border-0 ${isMe ? 'bg-gold/10' : ''}`}
             >
               <span className="w-8 flex justify-center shrink-0">
                 {i < 3 ? <CrownIcon className={`w-5 h-5 ${medalColors[i]}`} /> : <span className="score-number text-brand-mist">{i + 1}</span>}
@@ -152,7 +168,7 @@ function RankingTab({ ranking, profile }) {
           )
         })}
       </Card>
-      <p className="text-[11px] text-brand-steel text-center mt-3">
+      <p className="text-[11px] text-arena-muted text-center mt-3 font-bracket font-semibold">
         Placar exato = 5 pts · Vencedor certo = 2 pts · Desempate por placares cravados
       </p>
     </>
@@ -161,10 +177,25 @@ function RankingTab({ ranking, profile }) {
 
 function GroupTitle({ children, live = false }) {
   return (
-    <h2 className="headline text-base text-brand-navy mt-4 mb-3 flex items-center gap-2">
-      {live && <span className="w-2.5 h-2.5 bg-live rounded-full pulse-live not-italic" />}
-      {children}
+    <h2 className="flex items-center gap-2.5 mt-4 mb-3">
+      {live
+        ? <span className="w-2.5 h-2.5 bg-live rounded-full pulse-live" />
+        : <span className="section-slash" aria-hidden="true" />}
+      <span className="font-bracket-display text-base text-white tracking-[0.05em] uppercase">{children}</span>
     </h2>
+  )
+}
+
+function FilterChip({ active, children, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`shrink-0 px-3.5 py-[5px] font-bracket font-bold text-xs tracking-[0.08em] uppercase transition ${
+        active ? 'cut-corner-sm bg-gold text-brand-ink' : 'border border-white/[0.12] text-arena-muted hover:text-white'
+      }`}
+    >
+      {children}
+    </button>
   )
 }
 
@@ -172,7 +203,9 @@ function TabButton({ active, children, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`flex-1 py-2 rounded-xl text-sm font-bold transition inline-flex items-center justify-center gap-1.5 ${active ? 'bg-brand text-white shadow-sm' : 'text-brand-steel'}`}
+      className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 font-bracket font-bold text-xs tracking-[0.1em] uppercase transition ${
+        active ? 'cut-corner-sm bg-gold text-brand-ink' : 'text-arena-muted hover:text-white'
+      }`}
     >
       {children}
     </button>
