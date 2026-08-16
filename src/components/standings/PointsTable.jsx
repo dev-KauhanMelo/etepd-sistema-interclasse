@@ -30,7 +30,7 @@ export default function PointsTable({ standings, teamOf, title, subtitle }) {
             className="w-12 shrink-0 flex items-center justify-center font-bracket font-bold text-[11px] tracking-wider text-white/70"
             title={f.label}
           >
-            {f.key === 'booyahs' ? <BooyahIcon className="w-4 h-4 text-gold" aria-label="Booyah" /> : f.short}
+            {f.key === 'booyahs' ? <BooyahIcon className="w-[22px] h-[22px]" /> : f.short}
           </span>
         ))}
       </div>

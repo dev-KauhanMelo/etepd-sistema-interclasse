@@ -75,7 +75,10 @@ export default function Home() {
 
       {/* Jogo ao vivo como herói — as cores das turmas tomam o card */}
       {live.length > 0 ? (
-        live.map((m) => <LiveHero key={m.id} match={m} modName={modName(m.modalityId)} />)
+        // gap entre os cards: com dois jogos ao vivo eles ficavam colados
+        <div className="flex flex-col gap-3">
+          {live.map((m) => <LiveHero key={m.id} match={m} modName={modName(m.modalityId)} />)}
+        </div>
       ) : (
         <div className="mx-4 cut-corner bg-arena-panel border border-white/[0.07] px-5 py-5 text-center">
           <p className="font-bracket-display text-lg text-white tracking-wide">NENHUM JOGO AO VIVO</p>
@@ -156,14 +159,14 @@ function LiveHero({ match, modName }) {
   return (
     <Link to={`/placar/${match.id}`} className="block mx-4 animate-pop-in">
       <div
-        className="cut-corner relative overflow-hidden"
+        className="cut-corner relative overflow-hidden border border-white/70"
         style={{ background: `linear-gradient(104deg, ${a} 0%, ${a} 46%, ${b} 54%, ${b} 100%)` }}
       >
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,15,25,0.30),rgba(11,15,25,0.86))]" />
         <div className="relative px-4 pt-3.5 pb-4">
           <div className="flex items-center justify-between">
-            <span className="chevron-tag inline-flex items-center gap-1.5 bg-live text-white font-bracket font-bold text-[11px] tracking-[0.1em] px-2.5 py-[3px] pr-4 uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-white pulse-live" />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 font-bracket font-bold text-[11px] tracking-[0.1em] uppercase text-live shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-live pulse-live" />
               Ao vivo
             </span>
             <span className="font-bracket font-bold text-[11px] tracking-[0.14em] text-white/75 uppercase">

@@ -114,7 +114,7 @@ export function FlameIcon({ className = 'w-6 h-6' }) {
 
 export function SearchIcon({ className = 'w-6 h-6' }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
       <path d="m21 21-4.34-4.34" />
       <circle cx="11" cy="11" r="8" />
     </svg>
@@ -148,13 +148,10 @@ export function ListIcon({ className = 'w-6 h-6' }) {
   )
 }
 
-// Booyah: a vitória no Free Fire. O "B!" dentro do raio, como o selo do jogo.
+// Booyah: a vitória no Free Fire. Usa a arte oficial de public/boyahh.png —
+// é uma marca com forma e cor próprias, que um ícone de traço não reproduz.
 export function BooyahIcon({ className = 'w-4 h-4' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <path d="M13.6 1.5 3.4 13.2c-.4.5-.1 1.3.6 1.3h4.3l-1.6 7.6c-.1.7.8 1.1 1.3.6l10.4-11.8c.4-.5.1-1.3-.6-1.3h-4.4l1.5-7.4c.1-.7-.8-1.2-1.3-.7z" />
-    </svg>
-  )
+  return <img src="/boyahh.png" alt="" aria-hidden="true" className={`${className} object-contain shrink-0`} />
 }
 
 // Lupa com zoom (+/−) para o chaveamento

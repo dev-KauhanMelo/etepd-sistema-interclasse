@@ -28,7 +28,7 @@ export default function MatchRow({ match, modName }) {
     <Link
       to={`/placar/${match.id}`}
       className={`block cut-corner relative overflow-hidden border transition hover:border-gold/40 ${
-        live ? 'border-live/35' : 'border-white/[0.07] bg-arena-panel'
+        live ? 'border-white/70' : 'border-white/[0.07] bg-arena-panel'
       } ${finished ? 'opacity-70' : ''}`}
       style={live ? { background: `linear-gradient(104deg, ${colorA} 0%, ${colorA} 46%, ${colorB} 54%, ${colorB} 100%)` } : undefined}
     >
@@ -38,14 +38,22 @@ export default function MatchRow({ match, modName }) {
 
       {/* Andar 1 — meta */}
       <div className={`relative flex items-center justify-between gap-2 px-3.5 py-2.5 ${live ? 'border-b border-white/15' : 'border-b border-white/[0.06]'}`}>
-        <span
-          className={`inline-flex items-center gap-1.5 font-bracket font-bold text-[10px] tracking-[0.14em] uppercase ${
-            live ? 'text-live' : scheduled ? 'text-accent' : 'text-arena-muted'
-          }`}
-        >
-          {live && <span className="w-1.5 h-1.5 rounded-full bg-live pulse-live" />}
-          {live ? 'Ao vivo' : finished ? 'Encerrado' : `Agendado · ${isTimeTBD(match) ? 'a definir' : matchTime(match)}`}
-        </span>
+        {live ? (
+          // Pílula branca em volta do vermelho: o contraste faz o "ao vivo"
+          // saltar mesmo por cima das cores fortes das turmas.
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-[3px] font-bracket font-bold text-[10px] tracking-[0.14em] uppercase text-live shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-live pulse-live" />
+            Ao vivo
+          </span>
+        ) : (
+          <span
+            className={`inline-flex items-center gap-1.5 font-bracket font-bold text-[10px] tracking-[0.14em] uppercase ${
+              scheduled ? 'text-accent' : 'text-arena-muted'
+            }`}
+          >
+            {finished ? 'Encerrado' : `Agendado · ${isTimeTBD(match) ? 'a definir' : matchTime(match)}`}
+          </span>
+        )}
         <span className="font-bracket font-bold text-[10px] tracking-[0.1em] text-arena-dim uppercase truncate">
           {venue}{space ? ` · ${space}` : ''}
         </span>
