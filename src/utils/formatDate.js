@@ -16,6 +16,24 @@ export function formatTime(timestamp) {
   return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 }
 
+// Alguns jogos entram no sistema com o dia e o local certos, mas sem hora:
+// a Comissão divulga a ordem das modalidades, não o horário de cada partida.
+// Nesses casos o jogo carrega `timeTBD: true` e a tela diz "a definir" em vez
+// de mostrar um horário inventado — o aluno se organiza pelo dia e pelo local.
+export const isTimeTBD = (match) => !!match?.timeTBD
+
+export function matchTime(match) {
+  if (isTimeTBD(match)) return 'a def.'
+  return formatTime(match?.scheduledAt)
+}
+
+export function matchDateTime(match) {
+  if (!match?.scheduledAt) return '-'
+  const date = match.scheduledAt.toDate ? match.scheduledAt.toDate() : new Date(match.scheduledAt)
+  const dia = date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })
+  return isTimeTBD(match) ? `${dia} · horário a definir` : formatDateTime(match.scheduledAt)
+}
+
 export function formatShortDate(timestamp) {
   if (!timestamp) return '-'
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)

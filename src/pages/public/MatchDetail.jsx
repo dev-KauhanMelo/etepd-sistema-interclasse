@@ -10,7 +10,7 @@ import ScoreBoard from '../../components/match/ScoreBoard'
 import Loader from '../../components/common/Loader'
 import BackButton from '../../components/common/BackButton'
 import { useMatch } from '../../hooks/useMatch'
-import { formatDateTime } from '../../utils/formatDate'
+import { matchDateTime } from '../../utils/formatDate'
 import { PHASE_LABELS } from '../../utils/constants'
 
 export default function MatchDetail() {
@@ -51,7 +51,7 @@ export default function MatchDetail() {
           </div>
 
           <p className="text-center text-xs mt-4 text-brand-steel">
-            {formatDateTime(match.scheduledAt)}
+            {matchDateTime(match)}
           </p>
         </div>
       </div>

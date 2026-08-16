@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import Card from '../../components/common/Card'
 import MatchStatusBadge from '../../components/match/MatchStatusBadge'
 import { useMatches } from '../../hooks/useMatches'
-import { isToday, formatTime } from '../../utils/formatDate'
+import { isToday, matchTime } from '../../utils/formatDate'
 
 export default function Dashboard() {
   const { matches } = useMatches()
@@ -31,7 +31,7 @@ export default function Dashboard() {
             <Card className="mb-2 flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">{m.teamA?.name} × {m.teamB?.name}</p>
-                <p className="text-xs text-slate-400">{formatTime(m.scheduledAt)} · {m.location}</p>
+                <p className="text-xs text-slate-400">{matchTime(m)} · {m.location}</p>
               </div>
               <MatchStatusBadge status={m.status} />
             </Card>

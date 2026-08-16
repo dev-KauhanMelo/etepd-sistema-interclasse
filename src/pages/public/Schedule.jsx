@@ -9,7 +9,7 @@ import TeamCrest from '../../components/match/TeamCrest'
 import { ClockIcon } from '../../components/common/Icons'
 import { useMatches } from '../../hooks/useMatches'
 import { useModalities } from '../../hooks/useModalities'
-import { formatTime, isToday } from '../../utils/formatDate'
+import { formatTime, isToday, matchTime, isTimeTBD } from '../../utils/formatDate'
 import { filterMatches, groupByDay } from '../../utils/matchFilters'
 import ProgramGrid from '../../components/schedule/ProgramGrid'
 import { VENUE_LIST } from '../../utils/cronograma'
@@ -112,7 +112,7 @@ export default function Schedule() {
               <div className="bg-white rounded-2xl shadow-card border border-brand-mist/25 divide-y divide-brand-paper overflow-hidden">
                 {g.items.map((m) => (
                   <Link key={m.id} to={`/placar/${m.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-brand-paper/60 transition">
-                    <span className="score-number text-base text-brand w-12 shrink-0">{formatTime(m.scheduledAt)}</span>
+                    <span className={`w-12 shrink-0 ${isTimeTBD(m) ? 'text-[10px] font-bold uppercase text-brand-steel leading-tight' : 'score-number text-base text-brand'}`}>{matchTime(m)}</span>
                     <div className="flex items-center gap-1.5 flex-1 min-w-0">
                       <TeamCrest team={m.teamA} size="sm" />
                       <span className="text-xs font-bold text-brand-deep truncate">{m.teamA?.name}</span>

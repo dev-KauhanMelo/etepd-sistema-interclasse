@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import MatchStatusBadge from './MatchStatusBadge'
 import TeamCrest from './TeamCrest'
 import FlipScore from './FlipScore'
-import { formatTime } from '../../utils/formatDate'
+import { matchTime } from '../../utils/formatDate'
 
 // O card-assinatura do site: escudo de cada turma em cima do nome
 // (como nos jogos de basquete), placar gigante no centro.
@@ -17,7 +17,7 @@ export default function LiveScoreCard({ match }) {
           <div className="flex items-center justify-between mb-4">
             <MatchStatusBadge status={match.status} />
             <span className="text-xs font-medium text-brand-steel">
-              {formatTime(match.scheduledAt)} · {match.location}
+              {matchTime(match)} · {match.location}
             </span>
           </div>
           <div className="flex items-center justify-between gap-2">

@@ -8,7 +8,7 @@ import MatchStatusBadge from '../../components/match/MatchStatusBadge'
 import { useMatches } from '../../hooks/useMatches'
 import { useModalities } from '../../hooks/useModalities'
 import { deleteMatch } from '../../services/matchesService'
-import { formatDateTime, isToday } from '../../utils/formatDate'
+import { isToday, matchDateTime } from '../../utils/formatDate'
 import { filterMatches, groupByDay } from '../../utils/matchFilters'
 
 const STATUS_TABS = [
@@ -94,7 +94,7 @@ export default function ManageMatches() {
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{m.teamA?.name} × {m.teamB?.name}</p>
-                    <p className="text-xs text-slate-400">{formatDateTime(m.scheduledAt)} · {m.location}</p>
+                    <p className="text-xs text-slate-400">{matchDateTime(m)} · {m.location}</p>
                   </div>
                   <MatchStatusBadge status={m.status} />
                 </div>
