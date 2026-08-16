@@ -35,18 +35,23 @@ export const BRACKET_LINKS = [
   { from: 'jogo1', node: [163, 67], segs: [[166, 69, 25, 3], [190, 69, 3, 87], [191, 154, 25, 3]] },
   { from: 'jogo2', node: [163, 407], segs: [[166, 409, 118, 3], [283, 294, 3, 118], [284, 294, 118, 3]] },
   { from: 'jogo5', node: [349, 137], segs: [[352, 139, 25, 3], [376, 139, 3, 126], [377, 263, 25, 3]] },
-  { from: 'jogo7', node: [535, 277], segs: [[538, 279, 30, 3], [567, 235, 3, 47], [568, 235, 30, 3]] },
-  { from: 'jogo6', node: [855, 237], segs: [[828, 239, 30, 3], [827, 239, 3, 62], [798, 299, 30, 3]] },
+  { from: 'jogo7', node: [535, 277], segs: [[538, 279, 30, 3], [567, 225, 3, 57], [568, 225, 30, 3]] },
+  { from: 'jogo6', node: [855, 237], segs: [[828, 239, 30, 3], [827, 239, 3, 73], [798, 309, 30, 3]] },
   { from: 'jogo3', node: [1041, 67], segs: [[1019, 69, 25, 3], [1018, 69, 3, 156], [994, 223, 25, 3]] },
   { from: 'jogo4', node: [1041, 407], segs: [[1019, 409, 25, 3], [1018, 254, 3, 156], [994, 254, 25, 3]] },
 ]
 
 export const FINAL_LAYOUT = {
   trophy: { left: 619, top: -1, width: 150, height: 140 },
-  // 152 e não 164 como no protótipo: lá o "DECISÃO DO TÍTULO" ficava por
-  // baixo da moldura da final e aparecia cortado pela metade.
-  title: { left: 598, top: 152, width: 200 },
-  box: { left: 598, top: 206, width: 200, height: 124 },
+  // 140: o bloco "FINAL" + "DECISÃO DO TÍTULO" ocupa ~46px, e a moldura
+  // começa em 196 — assim o subtítulo termina 10px antes dela. (Já foi 164,
+  // do protótipo, e 152; nas duas o subtítulo saía cortado pela moldura.)
+  title: { left: 598, top: 140, width: 200 },
+  // 144 e não 124: com 124 sobravam exatos 24px entre as duas faixas
+  // douradas para um selo "VS" de 22px, e ele encostava nas duas. Subindo o
+  // topo de 206 para 196 a caixa cresce sem sair do lugar (centro segue 268)
+  // e o vão passa a 44px. Os conectores de jogo7/jogo6 acompanham.
+  box: { left: 598, top: 196, width: 200, height: 144 },
   vs: { left: 681, top: 257, width: 34, height: 22 },
 }
 

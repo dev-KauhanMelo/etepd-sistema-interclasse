@@ -93,22 +93,23 @@ export default function Home() {
           <SectionTitle className="mt-6">Próximos jogos</SectionTitle>
           <div className="flex flex-col gap-2 mx-4">
             {upcoming.map((m) => (
+              // Nome DEBAIXO da bandeira: na horizontal, modalidade de nome
+              // longo (Brawl Stars, Basquete) empurrava o confronto e o nome
+              // da turma truncava ("2…" em vez de "2º A").
               <Link
                 key={m.id}
                 to={`/placar/${m.id}`}
-                className="cut-tl bg-arena-panel border border-white/[0.07] px-3.5 py-2.5 flex items-center gap-3 hover:border-gold/40 transition"
+                className="cut-tl bg-arena-panel border border-white/[0.07] px-3.5 py-3 flex items-center gap-3 hover:border-gold/40 transition"
               >
-                <span className={`w-[52px] shrink-0 font-bracket-display leading-none ${isTimeTBD(m) ? 'text-[11px] text-arena-muted uppercase tracking-wide' : 'text-lg text-gold'}`}>
+                <span className={`w-[46px] shrink-0 font-bracket-display leading-none ${isTimeTBD(m) ? 'text-[11px] text-arena-muted uppercase tracking-wide' : 'text-lg text-gold'}`}>
                   {matchTime(m)}
                 </span>
-                <span className="flex-1 min-w-0 flex items-center gap-1.5 font-bracket font-bold text-sm text-arena-text tracking-[0.04em]">
-                  <TeamCrest team={m.teamA} size="sm" />
-                  <span className="truncate">{m.teamA?.name}</span>
-                  <span className="text-arena-dim font-semibold px-0.5">vs</span>
-                  <TeamCrest team={m.teamB} size="sm" />
-                  <span className="truncate">{m.teamB?.name}</span>
+                <span className="flex-1 min-w-0 flex items-center justify-center gap-3">
+                  <NextTeam team={m.teamA} />
+                  <span className="font-bracket-display text-xs text-gold shrink-0">VS</span>
+                  <NextTeam team={m.teamB} />
                 </span>
-                <span className="shrink-0 font-bracket font-bold text-[10px] tracking-[0.12em] text-arena-muted uppercase">
+                <span className="w-[62px] shrink-0 font-body font-semibold text-[10px] leading-tight text-arena-muted text-right">
                   {modName(m.modalityId)}
                 </span>
               </Link>
@@ -181,6 +182,18 @@ function LiveHero({ match, modName }) {
         </div>
       </div>
     </Link>
+  )
+}
+
+// Bandeira em cima, nome embaixo — o nome cabe inteiro em qualquer largura.
+function NextTeam({ team }) {
+  return (
+    <span className="flex flex-col items-center gap-1">
+      <TeamCrest team={team} size="sm" />
+      <span className="font-bracket-display text-[13px] text-arena-text tracking-[0.04em] whitespace-nowrap">
+        {team?.name || '—'}
+      </span>
+    </span>
   )
 }
 
