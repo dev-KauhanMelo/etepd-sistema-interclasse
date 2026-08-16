@@ -19,10 +19,16 @@ export default {
         live: '#EF4444',
         scheduled: '#0552CB',
         finished: '#5A6C8C',
+        // Amarelo do placar de mesa, usado como "ouro" nas telas escuras
+        // (chaveamento e classificação por pontos).
+        gold: '#F5EA15',
       },
       fontFamily: {
         display: ['"Cabinet Grotesk"', 'sans-serif'],
         sans: ['"General Sans"', 'sans-serif'],
+        // Tipografia das telas de torneio (tema escuro)
+        'bracket-display': ['Anton', 'sans-serif'],
+        bracket: ['Rajdhani', 'sans-serif'],
       },
       boxShadow: {
         card: '0 1px 3px rgba(16, 48, 110, 0.08), 0 4px 16px rgba(16, 48, 110, 0.06)',

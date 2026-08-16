@@ -21,8 +21,18 @@ export default function EventGate({ children }) {
 
 function SplashScreen() {
   return (
-    <div className="min-h-screen jipd-hero flex items-center justify-center">
-      <img src="/jipd-logo.png" alt="JIPD 2026" className="animate-pop-in w-44" />
+    <div className="splash-stage relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
+      <div className="logo-plate splash-plate relative z-10 px-8 py-6">
+        <img src="/jipd-logo.png" alt="JIPD 2026 — Jogos Internos Porto Digital" className="w-44 block" />
+      </div>
+
+      {/* Indicador de que algo está acontecendo — antes não havia nenhum */}
+      <div className="splash-bar relative z-10 mt-8 w-32 h-[3px]" role="progressbar" aria-label="Carregando">
+        <i />
+      </div>
+      <p className="relative z-10 mt-4 font-bracket font-bold text-[11px] tracking-[0.24em] text-white/65 uppercase">
+        Jogos Internos 2026
+      </p>
     </div>
   )
 }
@@ -31,7 +41,9 @@ function GateScreen({ start, end }) {
   return (
     <div className="min-h-screen jipd-hero flex flex-col items-center justify-center px-6 text-center">
       <div className="animate-pop-in flex flex-col items-center">
-        <img src="/jipd-logo.png" alt="JIPD 2026 — Jogos Internos Porto Digital" className="w-56" />
+        <span className="logo-plate inline-flex px-6 py-4">
+          <img src="/jipd-logo.png" alt="JIPD 2026 — Jogos Internos Porto Digital" className="w-48 block" />
+        </span>
         <p className="mt-8 text-brand-mist text-sm font-medium uppercase tracking-widest">Os jogos vêm aí</p>
         <p className="mt-2 text-white font-display font-extrabold text-2xl">
           Jogos de {formatShortDate(start)}{end ? ` a ${formatShortDate(end)}` : ''}

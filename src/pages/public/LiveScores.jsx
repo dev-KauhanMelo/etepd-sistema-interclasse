@@ -1,32 +1,57 @@
+import { useState } from 'react'
 import Header from '../../components/layout/Header'
 import LiveScoreCard from '../../components/match/LiveScoreCard'
 import EmptyState from '../../components/common/EmptyState'
 import Loader from '../../components/common/Loader'
+import SearchBar from '../../components/common/SearchBar'
 import { BarsIcon } from '../../components/common/Icons'
 import { useMatches } from '../../hooks/useMatches'
+import { useModalities } from '../../hooks/useModalities'
 import { isToday } from '../../utils/formatDate'
+import { filterMatches } from '../../utils/matchFilters'
 
 export default function LiveScores() {
   const { matches, loading } = useMatches()
+  const { modalities } = useModalities()
+  const [query, setQuery] = useState('')
+  const [modalityFilter, setModalityFilter] = useState('all')
+
   if (loading) return <Loader />
 
-  const live = matches.filter((m) => m.status === 'live')
-  const todayScheduled = matches
+  const visible = filterMatches(matches, { query, modalityId: modalityFilter, modalities })
+
+  const live = visible.filter((m) => m.status === 'live')
+  const todayScheduled = visible
     .filter((m) => m.status === 'scheduled' && isToday(m.scheduledAt))
     .sort((a, b) => (a.scheduledAt?.seconds || 0) - (b.scheduledAt?.seconds || 0))
-  const todayFinished = matches.filter((m) => m.status === 'finished' && isToday(m.scheduledAt))
+  const todayFinished = visible.filter((m) => m.status === 'finished' && isToday(m.scheduledAt))
 
   const nothingToday = live.length + todayScheduled.length + todayFinished.length === 0
+  const isFiltering = query || modalityFilter !== 'all'
 
   return (
     <div>
       <Header title="Placar ao vivo" subtitle="Tudo que está acontecendo hoje" />
-      <div className="p-4 pt-2">
+
+      <div className="px-4 pt-1">
+        <SearchBar value={query} onChange={setQuery} placeholder="Buscar turma, local ou modalidade…" />
+      </div>
+
+      <div className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-none">
+        <Chip active={modalityFilter === 'all'} onClick={() => setModalityFilter('all')}>Todas</Chip>
+        {modalities.map((m) => (
+          <Chip key={m.id} active={modalityFilter === m.id} onClick={() => setModalityFilter(m.id)}>
+            {m.name}
+          </Chip>
+        ))}
+      </div>
+
+      <div className="p-4 pt-0">
         {nothingToday && (
           <EmptyState
             icon={<BarsIcon className="w-10 h-10" />}
-            title="Nenhum jogo hoje"
-            subtitle="Confira a tabela completa em Horários"
+            title={isFiltering ? 'Nenhum jogo encontrado' : 'Nenhum jogo hoje'}
+            subtitle={isFiltering ? 'Tente outra busca ou modalidade' : 'Confira a tabela completa no Cronograma'}
           />
         )}
 
@@ -61,5 +86,18 @@ function GroupTitle({ children, live = false }) {
       {live && <span className="w-2.5 h-2.5 bg-live rounded-full pulse-live not-italic" />}
       {children}
     </h2>
+  )
+}
+
+function Chip({ active, children, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition ${
+        active ? 'bg-brand text-white shadow-sm' : 'bg-white text-brand-steel border border-brand-mist/40'
+      }`}
+    >
+      {children}
+    </button>
   )
 }

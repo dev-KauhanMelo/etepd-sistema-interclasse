@@ -14,7 +14,11 @@ export default function TopBar() {
     <div className="jipd-gradient sticky top-0 z-50 shadow-md">
       <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
         <Link to="/" aria-label="Ir para o início" className="flex items-center gap-2.5">
-          <img src="/jipd-logo.png" alt="Logo JIPD" className="h-10 w-auto" />
+          {/* A logo é uma marca escura: sobre o gradiente azul ela sumia.
+              O fundo claro devolve o contraste. */}
+          <span className="bg-white rounded-lg px-1.5 py-1 flex items-center shrink-0">
+            <img src="/jipd-logo.png" alt="Logo JIPD" className="h-8 w-auto block" />
+          </span>
           <span className="headline text-lg text-white leading-none">JIPD</span>
         </Link>
         <div className="flex items-center gap-2">

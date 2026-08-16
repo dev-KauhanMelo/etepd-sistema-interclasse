@@ -25,7 +25,7 @@ export default function Announcements() {
                 )}
               </div>
               <p className="text-sm text-brand-steel mt-1">{a.message}</p>
-              <p className="text-xs text-brand-mist mt-2">{formatDateTime(a.createdAt)}</p>
+              <p className="text-xs text-brand-steel mt-2">{formatDateTime(a.createdAt)}</p>
             </Card>
           ))
         )}

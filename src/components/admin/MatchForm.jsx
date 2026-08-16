@@ -5,6 +5,7 @@ import { useClasses } from '../../hooks/useClasses'
 import { useModalities } from '../../hooks/useModalities'
 import { createMatch, updateMatch } from '../../services/matchesService'
 import { useAuth } from '../../context/AuthContext'
+import { VENUES, VENUE_LIST } from '../../utils/cronograma'
 
 function toInputDate(ts) {
   const d = ts.toDate ? ts.toDate() : new Date(ts)
@@ -22,6 +23,8 @@ export default function MatchForm({ match, onClose }) {
     group: match?.group || '',
     teamAId: match?.teamA?.classId || '',
     teamBId: match?.teamB?.classId || '',
+    venue: match?.venue || 'pd',
+    space: match?.space || '',
     location: match?.location || '',
     scheduledAt: match?.scheduledAt ? toInputDate(match.scheduledAt) : '',
   })
@@ -32,13 +35,20 @@ export default function MatchForm({ match, onClose }) {
     const teamB = classes.find((c) => c.id === form.teamBId)
     if (!teamA || !teamB) return
 
+    // `location` continua sendo o texto que aparece pro aluno ("ETE PD · Sala 2"),
+    // mas agora é montado a partir do local + espaço escolhidos.
+    const venue = VENUES[form.venue]
+    const location = [venue?.short, form.space].filter(Boolean).join(' · ')
+
     const data = {
       modalityId: form.modalityId,
       phase: form.phase,
       group: form.group,
       teamA: { classId: teamA.id, name: teamA.name, color: teamA.color, logoUrl: teamA.logoUrl || null },
       teamB: { classId: teamB.id, name: teamB.name, color: teamB.color, logoUrl: teamB.logoUrl || null },
-      location: form.location,
+      venue: form.venue,
+      space: form.space || null,
+      location,
       scheduledAt: new Date(form.scheduledAt),
     }
 
@@ -61,7 +71,10 @@ export default function MatchForm({ match, onClose }) {
           options={classes.map((c) => ({ value: c.id, label: c.name }))} />
         <Select label="Turma B" value={form.teamBId} onChange={(v) => setForm({ ...form, teamBId: v })}
           options={classes.map((c) => ({ value: c.id, label: c.name }))} />
-        <Input label="Local" value={form.location} onChange={(v) => setForm({ ...form, location: v })} />
+        <Select label="Onde vai ser" value={form.venue} onChange={(v) => setForm({ ...form, venue: v, space: '' })}
+          options={VENUE_LIST.map((v) => ({ value: v.id, label: `${v.name} (${v.hint})` }))} />
+        <Select label="Espaço" value={form.space} onChange={(v) => setForm({ ...form, space: v })}
+          options={(VENUES[form.venue]?.spaces || []).map((s) => ({ value: s, label: s }))} />
         <Input label="Data e hora" type="datetime-local" value={form.scheduledAt} onChange={(v) => setForm({ ...form, scheduledAt: v })} />
 
         <div className="flex gap-2 pt-2">

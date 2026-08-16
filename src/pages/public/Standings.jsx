@@ -6,6 +6,8 @@ import Loader from '../../components/common/Loader'
 import TeamCrest from '../../components/match/TeamCrest'
 import { TrophyIcon, CrownIcon } from '../../components/common/Icons'
 import BracketBoard from '../../components/bracket/BracketBoard'
+import PointsTable from '../../components/standings/PointsTable'
+import GroupStage from '../../components/bracket/GroupStage'
 import { useModalities } from '../../hooks/useModalities'
 import { useStandings } from '../../hooks/useStandings'
 import { useMatches } from '../../hooks/useMatches'
@@ -21,7 +23,10 @@ export default function Standings() {
   const [tab, setTab] = useState('classificacao')
 
   const activeModality = modalityId || modalities[0]?.id
-  const { standings, loading } = useStandings(activeModality)
+  const modality = modalities.find((m) => m.id === activeModality)
+  // Free Fire usa a tabela por pontos (LBFF); o resto segue o formato clássico.
+  const format = modality?.standingsFormat === 'pontos' ? 'pontos' : 'classico'
+  const { standings, loading } = useStandings(activeModality, format)
   const { matches } = useMatches()
 
   const bracketMatches = matches.filter((m) => m.modalityId === activeModality && m.phase !== 'grupos')
@@ -56,6 +61,8 @@ export default function Standings() {
         {tab === 'classificacao' ? (
           loading ? <Loader /> : standings.length === 0 ? (
             <EmptyState icon={<TrophyIcon className="w-10 h-10" />} title="Ranking ainda não disponível" subtitle="Os pontos aparecem aqui quando os jogos começarem" />
+          ) : format === 'pontos' ? (
+            <PointsTable standings={standings} teamOf={teamOf} title={modality?.name} subtitle={modality?.name} />
           ) : (
             <>
               {/* Pódio dos 3 primeiros */}
@@ -69,7 +76,7 @@ export default function Standings() {
 
               <Card className="p-0 overflow-hidden">
                 <table className="w-full text-sm">
-                  <thead>2°
+                  <thead>
                     <tr className="text-left text-brand-steel text-xs bg-brand-paper/70">
                       <th className="py-2.5 pl-4">#</th>
                       <th className="py-2.5">Turma</th>
@@ -83,7 +90,7 @@ export default function Standings() {
                   <tbody>
                     {standings.map((s, i) => (
                       <tr key={s.id} className="border-t border-brand-paper">
-                        <td className={`py-2.5 pl-4 score-number ${i < 3 ? 'text-brand' : 'text-brand-mist'}`}>{i + 1}</td>
+                        <td className={`py-2.5 pl-4 score-number ${i < 3 ? 'text-brand' : 'text-brand-steel'}`}>{i + 1}</td>
                         <td className="py-2.5 font-bold text-brand-deep">
                           <span className="inline-flex items-center gap-2">
                             <TeamCrest team={teamOf(s)} size="sm" />
@@ -115,6 +122,10 @@ export default function Standings() {
   )
 }
 
+// Modalidades femininas de Esportes que são fase de grupos (edital 3.3).
+// Handebol, Queimado e Barra Bandeira ficam de fora — essas são mata-mata.
+const GRUPOS_FEMININO = ['voleibol', 'basquete', 'futsal', 'futmesa', 'quadrado vôlei', 'quadrado volei']
+
 function BracketTab({ modality, classes, phases, bracketMatches }) {
   const { bracket, loading, loadedFor } = useBracket(modality?.id)
 
@@ -134,6 +145,13 @@ function BracketTab({ modality, classes, phases, bracketMatches }) {
         />
       </div>
     )
+  }
+
+  // Esportes femininos de fase de grupos: mostra a tabela de rodadas oficial
+  // enquanto a Comissão não publica um chaveamento próprio.
+  const nome = (modality?.name || '').toLowerCase()
+  if (GRUPOS_FEMININO.some((m) => nome.includes(m))) {
+    return <GroupStage title={`${modality?.name} · Fase de grupos`} />
   }
 
   if (phases.length === 0) {

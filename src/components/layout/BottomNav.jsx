@@ -5,7 +5,7 @@ const items = [
   { to: '/', label: 'Início', Icon: HomeIcon },
   { to: '/placar', label: 'Placar', Icon: BarsIcon },
   { to: '/bolao', label: 'Bolão', Icon: NodesIcon },
-  { to: '/horarios', label: 'Horários', Icon: ClockIcon },
+  { to: '/horarios', label: 'Cronograma', Icon: ClockIcon },
   { to: '/ranking', label: 'Ranking', Icon: TrophyIcon },
 ]
 
@@ -19,7 +19,7 @@ export default function BottomNav() {
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl text-[11px] font-semibold transition ${
+              `flex flex-col items-center gap-0.5 px-1.5 py-1.5 rounded-2xl text-[10px] font-semibold tracking-tight transition ${
                 isActive ? 'text-brand' : 'text-brand-steel/70 hover:text-brand-steel'
               }`
             }

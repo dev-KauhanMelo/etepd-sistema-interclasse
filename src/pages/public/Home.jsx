@@ -25,7 +25,10 @@ export default function Home() {
     <div className="p-4">
       {/* Hero de boas-vindas */}
       <div className="jipd-hero rounded-3xl px-6 pt-7 pb-7 text-center shadow-card animate-pop-in">
-        <img src="/jipd-logo.png" alt="Logo JIPD" className="h-20 w-auto mx-auto" />
+        {/* Mesma correção do splash: a marca é escura e precisa de superfície clara */}
+        <span className="logo-plate inline-flex px-5 py-3 mx-auto">
+          <img src="/jipd-logo.png" alt="Logo JIPD" className="h-16 w-auto block" />
+        </span>
         <p className="mt-5 text-brand-light text-xs font-bold tracking-[0.35em] uppercase">Bem-vindo ao</p>
         <h1 className="headline text-5xl text-white mt-1 leading-none">JIPD 2026</h1>
         <p className="mt-2 text-brand-mist text-sm font-medium">Jogos Internos · ETE Porto Digital</p>
@@ -77,7 +80,7 @@ export default function Home() {
       {announcements[0] && (
         <>
           <SectionTitle>Último aviso</SectionTitle>
-          <Card className="border-l-4 border-l-brand">
+          <Card>
             <p className="font-bold text-sm text-brand-deep">{announcements[0].title}</p>
             <p className="text-sm text-brand-steel mt-1">{announcements[0].message}</p>
             <Link to="/avisos" className="inline-block text-brand font-semibold text-xs mt-3">
