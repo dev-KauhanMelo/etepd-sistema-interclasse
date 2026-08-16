@@ -58,17 +58,26 @@ export default function Schedule() {
             <SearchBar value={query} onChange={setQuery} placeholder="Buscar turma, local ou modalidade…" />
           </div>
 
-          {/* Filtro por momento do jogo */}
-          <div className="flex gap-2 overflow-x-auto px-4 pt-3 scrollbar-none">
+          {/* Filtro por momento do jogo: segmentado, mesma linguagem do Placar */}
+          <div className="mx-4 mt-3 cut-corner-sm bg-arena-panel p-1 flex gap-1">
             {STATUS_TABS.map((t) => (
-              <Chip key={t.key} active={statusFilter === t.key} onClick={() => setStatusFilter(t.key)}>
+              <button
+                key={t.key}
+                onClick={() => setStatusFilter(t.key)}
+                className={`flex-1 py-[6px] font-bracket font-bold text-[11px] tracking-[0.08em] uppercase transition ${
+                  statusFilter === t.key ? 'cut-corner-sm bg-gold text-brand-ink' : 'text-arena-muted hover:text-white'
+                }`}
+              >
                 {t.label}
-              </Chip>
+              </button>
             ))}
           </div>
 
-          {/* Filtro por modalidade */}
-          <div className="flex gap-2 overflow-x-auto px-4 py-2 scrollbar-none">
+          {/* Filtro por modalidade, com rótulo pra separar do bloco de cima */}
+          <p className="px-4 pt-3 pb-1.5 font-bracket font-bold text-[10px] tracking-[0.2em] text-arena-dim uppercase">
+            Modalidade
+          </p>
+          <div className="flex gap-2 overflow-x-auto px-4 pb-2 scrollbar-none">
             <Chip active={modalityFilter === 'all'} onClick={() => setModalityFilter('all')}>Todas</Chip>
             {modalities.map((m) => (
               <Chip key={m.id} active={modalityFilter === m.id} onClick={() => setModalityFilter(m.id)}>
@@ -113,9 +122,9 @@ export default function Schedule() {
                           <span className="font-bracket font-bold text-xs text-white truncate">{m.teamB?.name}</span>
                           <TeamCrest team={m.teamB} size="sm" />
                         </div>
-                        <div className="flex flex-col items-end gap-1 shrink-0">
+                        <div className="flex flex-col items-end gap-1 shrink-0 w-[74px]">
                           <StatusTag status={m.status} />
-                          <span className="font-bracket font-semibold text-[10px] text-arena-muted">{m.location}</span>
+                          <LocationTag match={m} />
                         </div>
                       </Link>
                     ))}
@@ -127,6 +136,20 @@ export default function Schedule() {
         </>
       )}
     </div>
+  )
+}
+
+// "ETE PD · Área externa" numa linha só espremia os times — o local quebra
+// em duas linhas curtas, alinhadas à direita.
+function LocationTag({ match }) {
+  const [venue, space] = match.space
+    ? [match.venue === 'unibra' ? 'UNIBRA' : 'ETE PD', match.space]
+    : String(match.location || '').split(' · ')
+  return (
+    <span className="font-bracket font-semibold text-[10px] text-arena-muted text-right leading-tight">
+      {venue}
+      {space && <><br />{space}</>}
+    </span>
   )
 }
 

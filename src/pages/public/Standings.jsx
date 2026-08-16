@@ -8,7 +8,8 @@ import BracketBoard from '../../components/bracket/BracketBoard'
 import PointsTable from '../../components/standings/PointsTable'
 import GroupStage from '../../components/bracket/GroupStage'
 import { useModalities } from '../../hooks/useModalities'
-import { useStandings } from '../../hooks/useStandings'
+import SearchBar from '../../components/common/SearchBar'
+import { useStandings, useAllStandings, aggregateGeneral } from '../../hooks/useStandings'
 import { useMatches } from '../../hooks/useMatches'
 import { useClasses } from '../../hooks/useClasses'
 import { useBracket } from '../../hooks/useBracket'
@@ -18,15 +19,28 @@ import { mergeBracket } from '../../utils/bracket'
 export default function Standings() {
   const { modalities } = useModalities()
   const { classes } = useClasses()
-  const [modalityId, setModalityId] = useState('')
+  const [modalityId, setModalityId] = useState('geral')
   const [tab, setTab] = useState('classificacao')
+  const [modQuery, setModQuery] = useState('')
 
-  const activeModality = modalityId || modalities[0]?.id
+  const isGeral = modalityId === 'geral'
+  const activeModality = isGeral ? modalities[0]?.id : (modalityId || modalities[0]?.id)
   const modality = modalities.find((m) => m.id === activeModality)
   // Free Fire usa a tabela por pontos (LBFF); o resto segue o formato clássico.
   const format = modality?.standingsFormat === 'pontos' ? 'pontos' : 'classico'
-  const { standings, loading } = useStandings(activeModality, format)
+  const { standings: modStandings, loading: modLoading } = useStandings(activeModality, format)
+  const { rows: allRows, loading: allLoading } = useAllStandings()
   const { matches } = useMatches()
+
+  // GERAL = soma da campanha de cada turma em todas as modalidades
+  const standings = isGeral ? aggregateGeneral(allRows) : modStandings
+  const loading = isGeral ? allLoading : modLoading
+
+  // Busca de modalidade: 25 chips não se acham rolando
+  const nq = modQuery.trim().toLowerCase()
+  const visibleModalities = nq
+    ? modalities.filter((m) => m.name.toLowerCase().includes(nq))
+    : modalities
 
   const bracketMatches = matches.filter((m) => m.modalityId === activeModality && m.phase !== 'grupos')
   const phases = ['oitavas', 'quartas', 'semifinal', 'final'].filter((p) => bracketMatches.some((m) => m.phase === p))
@@ -42,24 +56,37 @@ export default function Standings() {
     <div>
       <Header title="RANKING" subtitle="Quem está dominando o JIPD?" />
 
-      <div className="flex gap-2 overflow-x-auto px-4 py-2 scrollbar-none">
-        {modalities.map((m) => (
-          <Chip key={m.id} active={activeModality === m.id} onClick={() => setModalityId(m.id)}>
+      <div className="px-4 pt-1">
+        <SearchBar value={modQuery} onChange={setModQuery} placeholder="Buscar modalidade…" />
+      </div>
+      <div className="flex gap-2 overflow-x-auto px-4 py-2.5 scrollbar-none">
+        <Chip active={isGeral} onClick={() => setModalityId('geral')}>
+          <TrophyIcon className="w-3.5 h-3.5" /> Geral
+        </Chip>
+        {visibleModalities.map((m) => (
+          <Chip key={m.id} active={!isGeral && activeModality === m.id} onClick={() => setModalityId(m.id)}>
             {m.name}
           </Chip>
         ))}
       </div>
 
       <div className="p-4 pt-2">
-        <div className="cut-corner-sm bg-arena-panel p-1 flex gap-1 mb-4">
-          <TabButton active={tab === 'classificacao'} onClick={() => setTab('classificacao')}>Classificação</TabButton>
-          <TabButton active={tab === 'chaveamento'} onClick={() => setTab('chaveamento')}>Chaveamento</TabButton>
-        </div>
+        {!isGeral && (
+          <div className="cut-corner-sm bg-arena-panel p-1 flex gap-1 mb-4">
+            <TabButton active={tab === 'classificacao'} onClick={() => setTab('classificacao')}>Classificação</TabButton>
+            <TabButton active={tab === 'chaveamento'} onClick={() => setTab('chaveamento')}>Chaveamento</TabButton>
+          </div>
+        )}
+        {isGeral && (
+          <p className="font-bracket font-bold text-[10px] tracking-[0.2em] text-arena-dim uppercase mb-3">
+            Soma de todas as modalidades
+          </p>
+        )}
 
-        {tab === 'classificacao' ? (
+        {isGeral || tab === 'classificacao' ? (
           loading ? <Loader /> : standings.length === 0 ? (
             <EmptyState icon={<TrophyIcon className="w-10 h-10" />} title="Ranking ainda não disponível" subtitle="Os pontos aparecem aqui quando os jogos começarem" />
-          ) : format === 'pontos' ? (
+          ) : !isGeral && format === 'pontos' ? (
             <PointsTable standings={standings} teamOf={teamOf} title={modality?.name} subtitle={modality?.name} />
           ) : (
             <>
@@ -226,7 +253,7 @@ function Chip({ active, children, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`shrink-0 px-3.5 py-[5px] font-bracket font-bold text-xs tracking-[0.08em] uppercase transition ${
+      className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-[5px] font-bracket font-bold text-xs tracking-[0.08em] uppercase transition ${
         active ? 'cut-corner-sm bg-gold text-brand-ink' : 'border border-white/[0.12] text-arena-muted hover:text-white'
       }`}
     >

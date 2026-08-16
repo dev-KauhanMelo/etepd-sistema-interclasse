@@ -76,10 +76,12 @@ function GhostCard({ match, modName }) {
         <span className="flex-1 min-w-0 font-bracket font-bold text-sm text-[#B9C4D8] tracking-[0.05em] truncate">
           {match.teamA?.name} <span className="text-arena-dim">vs</span> {match.teamB?.name}
         </span>
-        <span className="shrink-0 font-bracket font-bold text-[10px] tracking-[0.12em] text-arena-muted uppercase text-right">
+        <span className="shrink-0 font-bracket font-bold text-[10px] tracking-[0.12em] text-arena-muted uppercase text-right leading-tight">
           {modName}
           <br />
-          <span className="text-arena-dim normal-case tracking-normal">{match.location}</span>
+          <span className="text-arena-dim normal-case tracking-normal">
+            {match.space || String(match.location || '').split(' · ').pop()}
+          </span>
         </span>
       </div>
     </Link>

@@ -99,9 +99,7 @@ export default function MatchDetail() {
         {['scheduled', 'live', 'finished'].includes(match.status) && (
           <>
             <SectionTitle className="mt-5">Bolão JIPD</SectionTitle>
-            {/* O widget do bolão ainda é claro por dentro — ganha uma moldura
-                branca até o Bolão inteiro entrar no Modo Arena. */}
-            <div className="cut-corner bg-white p-4">
+            <div className="cut-corner bg-arena-panel border border-white/[0.07] p-4">
               <PalpiteWidget match={match} profile={profile} />
             </div>
           </>

@@ -25,14 +25,14 @@ export default function TeamCrest({ team, size = 'md' }) {
         alt={`Logo ${team?.name || ''}`}
         loading="lazy"
         onError={() => setImgFailed(true)}
-        className={`${sizeClass} rounded-full object-cover bg-white ring-2 ring-white shadow-card shrink-0`}
+        className={`${sizeClass} rounded-full object-cover bg-white ring-2 ring-white/90 shadow-[0_2px_8px_rgba(0,0,0,0.45)] shrink-0`}
       />
     )
   }
 
   return (
     <div
-      className={`${sizeClass} rounded-full flex items-center justify-center font-display font-black italic text-white ring-2 ring-white shadow-card shrink-0`}
+      className={`${sizeClass} rounded-full flex items-center justify-center font-display font-black italic text-white ring-2 ring-white/90 shadow-[0_2px_8px_rgba(0,0,0,0.45)] shrink-0`}
       style={{ backgroundColor: team?.color || '#5A6C8C' }}
     >
       {crestInitials(team?.name)}

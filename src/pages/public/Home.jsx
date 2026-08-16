@@ -101,11 +101,11 @@ export default function Home() {
                 <span className={`w-[52px] shrink-0 font-bracket-display leading-none ${isTimeTBD(m) ? 'text-[11px] text-arena-muted uppercase tracking-wide' : 'text-lg text-gold'}`}>
                   {matchTime(m)}
                 </span>
-                <span className="flex-1 min-w-0 flex items-center gap-2 font-bracket font-bold text-sm text-arena-text tracking-[0.04em]">
-                  <span className="w-2.5 h-2.5 rotate-45 shrink-0" style={{ backgroundColor: m.teamA?.color || '#5A6C8C' }} />
+                <span className="flex-1 min-w-0 flex items-center gap-1.5 font-bracket font-bold text-sm text-arena-text tracking-[0.04em]">
+                  <TeamCrest team={m.teamA} size="sm" />
                   <span className="truncate">{m.teamA?.name}</span>
-                  <span className="text-arena-dim font-semibold">vs</span>
-                  <span className="w-2.5 h-2.5 rotate-45 shrink-0" style={{ backgroundColor: m.teamB?.color || '#5A6C8C' }} />
+                  <span className="text-arena-dim font-semibold px-0.5">vs</span>
+                  <TeamCrest team={m.teamB} size="sm" />
                   <span className="truncate">{m.teamB?.name}</span>
                 </span>
                 <span className="shrink-0 font-bracket font-bold text-[10px] tracking-[0.12em] text-arena-muted uppercase">

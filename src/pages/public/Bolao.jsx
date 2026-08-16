@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import Header from '../../components/layout/Header'
-import Card from '../../components/common/Card'
 import EmptyState from '../../components/common/EmptyState'
 import Loader from '../../components/common/Loader'
 import TeamCrest from '../../components/match/TeamCrest'
@@ -98,32 +97,32 @@ export default function Bolao() {
 
 function BolaoMatchCard({ match, profile }) {
   return (
-    <Card className="mb-3 animate-pop-in">
+    <div className="cut-corner bg-arena-panel border border-white/[0.07] p-4 mb-3 animate-pop-in">
       <div className="flex items-center justify-between mb-3">
         <MatchStatusBadge status={match.status} />
-        <span className="text-xs font-medium text-brand-steel">
+        <span className="text-xs font-medium text-arena-muted font-bracket font-semibold uppercase tracking-wide">
           {formatDayHeader(match.scheduledAt)} · {matchTime(match)}
         </span>
       </div>
       <div className="flex items-center justify-center gap-3 mb-3">
         <span className="flex items-center gap-2 flex-1 justify-end min-w-0">
-          <span className="text-xs font-bold text-brand-deep truncate">{match.teamA?.name}</span>
+          <span className="text-xs font-bold text-white truncate font-bracket tracking-wide">{match.teamA?.name}</span>
           <TeamCrest team={match.teamA} size="sm" />
         </span>
-        <span className="text-brand-mist font-bold text-xs">VS</span>
+        <span className="text-gold font-bracket-display text-xs">VS</span>
         <span className="flex items-center gap-2 flex-1 min-w-0">
           <TeamCrest team={match.teamB} size="sm" />
-          <span className="text-xs font-bold text-brand-deep truncate">{match.teamB?.name}</span>
+          <span className="text-xs font-bold text-white truncate font-bracket tracking-wide">{match.teamB?.name}</span>
         </span>
       </div>
       {profile ? (
         <PalpiteWidget match={match} profile={profile} />
       ) : (
-        <p className="text-center text-xs text-brand-steel bg-brand-paper/70 rounded-xl px-3 py-2.5">
+        <p className="text-center text-xs text-arena-muted bg-white/5 px-3 py-2.5 cut-corner-sm">
           Crie seu perfil no topo da página pra liberar os palpites
         </p>
       )}
-    </Card>
+    </div>
   )
 }
 
@@ -144,30 +143,30 @@ function RankingTab({ ranking, profile }) {
 
   return (
     <>
-      <Card className="p-0 overflow-hidden animate-pop-in">
+      <div className="cut-corner bg-arena-panel border border-white/[0.07] overflow-hidden animate-pop-in">
         {scored.map((r, i) => {
           const isMe = profile && r.userId === profile.id
           return (
             <div
               key={r.userId}
-              className={`flex items-center gap-3 px-4 py-3 border-b border-brand-paper last:border-0 ${isMe ? 'bg-gold/10' : ''}`}
+              className={`flex items-center gap-3 px-4 py-3 border-b border-white/[0.06] last:border-0 ${isMe ? 'bg-gold/10' : ''}`}
             >
               <span className="w-8 flex justify-center shrink-0">
-                {i < 3 ? <CrownIcon className={`w-5 h-5 ${medalColors[i]}`} /> : <span className="score-number text-brand-mist">{i + 1}</span>}
+                {i < 3 ? <CrownIcon className={`w-5 h-5 ${medalColors[i]}`} /> : <span className="font-bracket-display text-arena-dim">{i + 1}</span>}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-brand-deep truncate">
-                  {r.name} {isMe && <span className="text-brand text-[10px] font-black uppercase ml-1">você</span>}
+                <p className="text-sm font-bold text-white truncate font-bracket tracking-wide">
+                  {r.name} {isMe && <span className="text-gold text-[10px] font-black uppercase ml-1">você</span>}
                 </p>
-                <p className="text-[11px] text-brand-steel">
+                <p className="text-[11px] text-arena-muted">
                   {r.className || 'Sem turma'} · {r.exact} placar{r.exact === 1 ? '' : 'es'} cravado{r.exact === 1 ? '' : 's'}
                 </p>
               </div>
-              <span className="score-number text-xl text-brand shrink-0">{r.points} <span className="text-xs text-brand-steel not-italic font-bold">pts</span></span>
+              <span className="font-bracket-display text-xl text-gold shrink-0">{r.points} <span className="text-xs text-arena-muted font-bracket font-bold">pts</span></span>
             </div>
           )
         })}
-      </Card>
+      </div>
       <p className="text-[11px] text-arena-muted text-center mt-3 font-bracket font-semibold">
         Placar exato = 5 pts · Vencedor certo = 2 pts · Desempate por placares cravados
       </p>

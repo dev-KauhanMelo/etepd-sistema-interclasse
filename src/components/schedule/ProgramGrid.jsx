@@ -66,19 +66,19 @@ export default function ProgramGrid() {
         {day.spaces.map((row) => (
           <div
             key={row.space}
-            className="cut-tl bg-arena-panel border border-white/[0.07] px-3.5 py-[11px] flex items-center gap-3"
+            className="cut-tl bg-arena-panel border border-white/[0.07] px-3.5 py-2.5 flex items-start gap-3"
           >
-            <span className="w-[86px] shrink-0 font-bracket-display text-[13px] text-white uppercase leading-tight tracking-wide">
+            {/* Espaço em voz discreta (Rajdhani muted) — só o JOGO fala alto */}
+            <span className="w-[78px] shrink-0 pt-[3px] font-bracket font-bold text-[10px] tracking-[0.14em] text-arena-muted uppercase leading-tight">
               {row.space}
             </span>
-            <div className="flex-1 min-w-0 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <div className="flex-1 min-w-0 flex flex-col gap-1">
               {row.slots.map((slot, i) => (
-                <span key={`${slot.name}-${i}`} className="inline-flex items-center gap-1.5">
-                  <span className="font-bracket font-bold text-[15px] text-arena-text tracking-[0.04em]">
+                <span key={`${slot.name}-${i}`} className="flex items-center justify-between gap-2">
+                  <span className="font-bracket font-bold text-[15px] text-arena-text tracking-[0.04em] truncate">
                     {slot.name}
                   </span>
                   {slot.category && <CategoryTag category={slot.category} />}
-                  {i < row.slots.length - 1 && <span className="text-arena-dim font-bold" aria-hidden="true">·</span>}
                 </span>
               ))}
             </div>

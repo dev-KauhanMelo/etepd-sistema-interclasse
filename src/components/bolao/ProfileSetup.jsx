@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import Card from '../common/Card'
 import Button from '../common/Button'
 import { NodesIcon, FireIcon } from '../common/Icons'
 import { useClasses } from '../../hooks/useClasses'
@@ -19,14 +18,14 @@ export default function ProfileSetup({ onDone }) {
   }
 
   return (
-    <Card className="animate-pop-in">
+    <div className="cut-corner bg-arena-panel border border-gold/25 p-4 animate-pop-in">
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 rounded-2xl bg-brand/10 flex items-center justify-center">
-          <NodesIcon className="w-5 h-5 text-brand" />
+        <div className="w-10 h-10 cut-corner-sm bg-gold/15 flex items-center justify-center">
+          <NodesIcon className="w-5 h-5 text-gold" />
         </div>
         <div>
-          <p className="font-display font-extrabold text-brand-deep">Entre no Bolão JIPD</p>
-          <p className="text-xs text-brand-steel">Diga quem é você pra começar a palpitar. Sem senha, sem enrolação.</p>
+          <p className="font-bracket-display text-base text-white tracking-wide">ENTRE NO BOLÃO JIPD</p>
+          <p className="text-xs text-arena-muted">Diga quem é você pra começar a palpitar. Sem senha, sem enrolação.</p>
         </div>
       </div>
       <form onSubmit={submit} className="space-y-3">
@@ -36,12 +35,12 @@ export default function ProfileSetup({ onDone }) {
           placeholder="Seu nome (ou apelido)"
           maxLength={40}
           required
-          className="w-full rounded-xl border border-brand-mist/50 bg-brand-paper/50 px-3 py-2.5 text-sm focus:outline-none focus:border-brand"
+          className="w-full cut-corner-sm border border-white/15 bg-white/5 text-arena-text placeholder:text-arena-muted/70 px-3 py-2.5 text-sm focus:outline-none focus:border-gold/60"
         />
         <select
           value={className}
           onChange={(e) => setClassName(e.target.value)}
-          className="w-full rounded-xl border border-brand-mist/50 bg-brand-paper/50 px-3 py-2.5 text-sm focus:outline-none focus:border-brand"
+          className="w-full cut-corner-sm border border-white/15 bg-white/5 text-arena-text placeholder:text-arena-muted/70 px-3 py-2.5 text-sm focus:outline-none focus:border-gold/60"
         >
           <option value="">Sua turma (opcional)</option>
           {classes.map((c) => (
@@ -52,6 +51,6 @@ export default function ProfileSetup({ onDone }) {
           Começar a palpitar <FireIcon className="w-4 h-4 text-amber-300" />
         </Button>
       </form>
-    </Card>
+    </div>
   )
 }

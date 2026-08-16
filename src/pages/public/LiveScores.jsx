@@ -85,8 +85,14 @@ export default function LiveScores() {
         {visible.length === 0 ? (
           <EmptyState
             icon={<BarsIcon className="w-10 h-10" />}
-            title={segment === 'live' ? 'Nenhum jogo ao vivo' : 'Nenhum jogo encontrado'}
-            subtitle={query || modalityFilter !== 'all' ? 'Tente outra busca ou modalidade' : 'Confira a tabela completa em Tabela'}
+            title={segment === 'live' ? 'Nenhum jogo ao vivo' : segment === 'today' ? 'Nenhum jogo hoje' : 'Nenhum jogo encontrado'}
+            subtitle={
+              query || modalityFilter !== 'all'
+                ? 'Tente outra busca ou modalidade'
+                : segment === 'today'
+                  ? 'Os jogos começam seg · 17/08. Veja a programação completa na Tabela'
+                  : 'Confira a tabela completa em Tabela'
+            }
           />
         ) : (
           visible.map((m) => <LiveScoreCard key={m.id} match={m} />)
