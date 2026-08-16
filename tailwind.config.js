@@ -40,6 +40,10 @@ export default {
         // Tipografia das telas de torneio (tema escuro)
         'bracket-display': ['Anton', 'sans-serif'],
         bracket: ['Rajdhani', 'sans-serif'],
+        // Fontes locais do JIPD (self-hosted em /public/fonts)
+        varsity: ['"Varsity JIPD"', 'Anton', 'sans-serif'],   // títulos de tela
+        jersey: ['"Jersey JIPD"', 'Anton', 'sans-serif'],     // SÓ números
+        body: ['Utendo', '"General Sans"', 'sans-serif'],     // nomes e leitura
       },
       boxShadow: {
         card: '0 1px 3px rgba(16, 48, 110, 0.08), 0 4px 16px rgba(16, 48, 110, 0.06)',

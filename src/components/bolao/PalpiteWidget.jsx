@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import Button from '../common/Button'
 import { SoccerBallIcon, CheckCircleIcon, FireIcon } from '../common/Icons'
 import { usePredictions } from '../../hooks/usePredictions'
 import { submitPrediction } from '../../services/predictionsService'
@@ -52,18 +51,21 @@ export default function PalpiteWidget({ match, profile }) {
     }
     return (
       <div>
-        <div className="flex items-center justify-center gap-3">
-          <Stepper value={scoreA} onChange={setScoreA} label={match.teamA?.name} />
-          <span className="text-gold font-bracket-display">×</span>
-          <Stepper value={scoreB} onChange={setScoreB} label={match.teamB?.name} />
+        <div className="grid grid-cols-[1fr_48px_1fr] items-center mt-3">
+          <Stepper value={scoreA} onChange={setScoreA} />
+          <span aria-hidden="true" />
+          <Stepper value={scoreB} onChange={setScoreB} />
         </div>
-        <Button onClick={save} disabled={saving} className="w-full mt-3 text-sm py-2 gap-1.5">
-          <SoccerBallIcon className="w-4 h-4" />
-          {saving ? 'Cravando...' : 'Cravar palpite'}
-        </Button>
+        <button
+          onClick={save}
+          disabled={saving}
+          className="w-full mt-4 cut-corner-sm bg-gold py-3 font-varsity text-[15px] text-brand-ink tracking-[0.06em] active:scale-[0.98] transition disabled:opacity-60"
+        >
+          {saving ? 'CRAVANDO…' : 'CRAVAR PALPITE →'}
+        </button>
         {error && <p className="text-xs text-red-500 text-center mt-2">{error}</p>}
-        <p className="text-[10px] text-arena-muted text-center mt-2 font-bracket font-semibold">
-          Placar exato vale {POINTS_EXACT} pts · vencedor certo vale 2 pts. Fecha quando a bola rola!
+        <p className="text-center font-body font-medium text-xs text-arena-dim mt-2.5">
+          Placar exato vale {POINTS_EXACT} pts · vencedor certo vale 2 pts
         </p>
       </div>
     )
@@ -89,25 +91,28 @@ export default function PalpiteWidget({ match, profile }) {
   )
 }
 
-function Stepper({ value, onChange, label }) {
+function Stepper({ value, onChange }) {
   return (
-    <div className="flex flex-col items-center gap-1">
-      <span className="text-[10px] font-bold text-arena-muted uppercase truncate max-w-[80px] font-bracket tracking-wide">{label || '-'}</span>
-      <div className="flex items-center gap-1.5">
-        <StepBtn onClick={() => onChange(Math.max(0, value - 1))}>−</StepBtn>
-        <span className="font-bracket-display text-2xl text-white w-8 text-center">{value}</span>
-        <StepBtn onClick={() => onChange(Math.min(99, value + 1))}>+</StepBtn>
-      </div>
+    <div className="flex items-center justify-center gap-3">
+      <StepBtn onClick={() => onChange(Math.max(0, value - 1))} aria-label="Menos um">−</StepBtn>
+      <span className="font-jersey text-[28px] leading-none text-white min-w-[22px] text-center">{value}</span>
+      <StepBtn onClick={() => onChange(Math.min(99, value + 1))} primary aria-label="Mais um">+</StepBtn>
     </div>
   )
 }
 
-function StepBtn({ children, onClick }) {
+// O "+" é o botão dominante: é o que a pessoa aperta o tempo todo.
+function StepBtn({ children, onClick, primary = false, ...rest }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="w-9 h-9 rounded-full bg-white/10 border border-white/15 text-white font-bold text-lg leading-none active:scale-90 transition"
+      {...rest}
+      className={`w-[34px] h-[34px] cut-corner-sm flex items-center justify-center font-bracket font-bold text-lg leading-none active:scale-90 transition border ${
+        primary
+          ? 'bg-gold/10 border-gold/45 text-gold'
+          : 'bg-white/[0.06] border-white/[0.16] text-arena-text'
+      }`}
     >
       {children}
     </button>

@@ -172,9 +172,9 @@ function LiveHero({ match, modName }) {
           <div className="flex items-center justify-center gap-4 mt-3.5">
             <HeroSide team={match.teamA} />
             <div className="flex items-baseline gap-2.5">
-              <span className="font-bracket-display text-[58px] leading-none text-white">{match.scoreA ?? 0}</span>
+              <span className="font-jersey text-[58px] leading-none text-white">{match.scoreA ?? 0}</span>
               <span className="font-bracket-display text-[22px] text-gold">×</span>
-              <span className="font-bracket-display text-[58px] leading-none text-white">{match.scoreB ?? 0}</span>
+              <span className="font-jersey text-[58px] leading-none text-white">{match.scoreB ?? 0}</span>
             </div>
             <HeroSide team={match.teamB} />
           </div>

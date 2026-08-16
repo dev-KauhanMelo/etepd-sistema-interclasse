@@ -47,8 +47,8 @@ export default function ProfileSetup({ onDone }) {
             <option key={c.id} value={c.name}>{c.name}</option>
           ))}
         </select>
-        <Button type="submit" className="w-full gap-1.5">
-          Começar a palpitar <FireIcon className="w-4 h-4 text-amber-300" />
+        <Button type="submit" variant="arena" className="w-full gap-1.5 py-3 text-[15px]">
+          COMEÇAR A PALPITAR <FireIcon className="w-4 h-4 text-brand-ink" />
         </Button>
       </form>
     </div>

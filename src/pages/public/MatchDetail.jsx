@@ -77,9 +77,9 @@ export default function MatchDetail() {
           <div className="flex items-center justify-center gap-4 mt-3.5">
             <HeroSide team={match.teamA} />
             <div className="flex items-baseline gap-3">
-              <span className="font-bracket-display text-[76px] leading-none text-white">{match.scoreA ?? 0}</span>
+              <span className="font-jersey text-[76px] leading-none text-white">{match.scoreA ?? 0}</span>
               <span className="font-bracket-display text-[26px] text-gold">×</span>
-              <span className="font-bracket-display text-[76px] leading-none text-white">{match.scoreB ?? 0}</span>
+              <span className="font-jersey text-[76px] leading-none text-white">{match.scoreB ?? 0}</span>
             </div>
             <HeroSide team={match.teamB} />
           </div>

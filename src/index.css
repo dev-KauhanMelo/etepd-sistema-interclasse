@@ -2,6 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== Fontes do JIPD, servidas pelo próprio site =====
+   Vêm da coleção local do projeto (não do Google Fonts): carregam mais rápido,
+   funcionam offline e dão ao evento uma voz que nenhum outro site tem.
+   `swap` para o texto aparecer imediatamente com a fonte de fallback. */
+
+/* Voz de display: colegial americana, com contorno. Cobre º, × e acentos —
+   por isso pode escrever "3º B" e "Ginásio" sem quebrar. Títulos de tela. */
+@font-face {
+  font-family: 'Varsity JIPD';
+  src: url('/fonts/varsity.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* Números de camisa de time. Só tem dígitos e maiúsculas sem acento —
+   por isso é usada EXCLUSIVAMENTE em placares e contadores. */
+@font-face {
+  font-family: 'Jersey JIPD';
+  src: url('/fonts/jersey-m54.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* Voz de leitura: nomes de modalidade, subtítulos e texto corrido. */
+@font-face {
+  font-family: 'Utendo';
+  src: url('/fonts/utendo-medium.ttf') format('truetype');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Utendo';
+  src: url('/fonts/utendo-semibold.ttf') format('truetype');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Utendo';
+  src: url('/fonts/utendo-bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
 html, body, #root { height: 100%; }
 
 @layer utilities {

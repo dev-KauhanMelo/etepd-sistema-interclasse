@@ -43,11 +43,11 @@ export default function LiveScores() {
       <header className="px-4 pt-5 pb-0 flex items-center gap-3">
         <BackButton />
         <div>
-          <h1 className="font-bracket-display text-3xl text-white tracking-[0.03em] leading-none flex items-center gap-2.5">
+          <h1 className="font-varsity text-[30px] text-white tracking-[0.03em] leading-none flex items-center gap-2.5">
             {liveCount > 0 && <span className="w-2.5 h-2.5 rounded-full bg-live pulse-live" />}
             PLACAR
           </h1>
-          <p className="font-bracket font-semibold text-[13px] text-arena-muted mt-1 tracking-[0.06em] uppercase">
+          <p className="font-body font-medium text-[13px] text-arena-muted mt-1 tracking-[0.06em] uppercase">
             {liveCount > 0 ? `${liveCount} jogo${liveCount > 1 ? 's' : ''} rolando agora` : 'Tudo que está acontecendo'}
           </p>
         </div>

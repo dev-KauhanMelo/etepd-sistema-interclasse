@@ -3,7 +3,6 @@ import Header from '../../components/layout/Header'
 import EmptyState from '../../components/common/EmptyState'
 import Loader from '../../components/common/Loader'
 import TeamCrest from '../../components/match/TeamCrest'
-import MatchStatusBadge from '../../components/match/MatchStatusBadge'
 import ProfileSetup from '../../components/bolao/ProfileSetup'
 import PalpiteWidget from '../../components/bolao/PalpiteWidget'
 import { NodesIcon, TrophyIcon, SoccerBallIcon, CrownIcon, FireIcon } from '../../components/common/Icons'
@@ -14,7 +13,7 @@ import { buildBolaoRanking } from '../../utils/bolao'
 import SearchBar from '../../components/common/SearchBar'
 import { useModalities } from '../../hooks/useModalities'
 import { filterMatches } from '../../utils/matchFilters'
-import { matchTime, formatDayHeader } from '../../utils/formatDate'
+import { matchTime, isTimeTBD, formatDayHeader } from '../../utils/formatDate'
 
 export default function Bolao() {
   const [profile, setProfile] = useState(getFanProfile())
@@ -96,32 +95,53 @@ export default function Bolao() {
 }
 
 function BolaoMatchCard({ match, profile }) {
+  const scheduled = match.status === 'scheduled'
   return (
-    <div className="cut-corner bg-arena-panel border border-white/[0.07] p-4 mb-3 animate-pop-in">
-      <div className="flex items-center justify-between mb-3">
-        <MatchStatusBadge status={match.status} />
-        <span className="text-xs font-medium text-arena-muted font-bracket font-semibold uppercase tracking-wide">
-          {formatDayHeader(match.scheduledAt)} · {matchTime(match)}
+    <div className="cut-corner bg-arena-panel border border-white/[0.07] p-3.5 mb-3 animate-pop-in">
+      {/* Meta em uma linha só, sem quebra */}
+      <div className="flex items-center justify-between gap-2">
+        <span
+          className={`cut-corner-sm font-bracket font-bold text-[10px] tracking-[0.12em] uppercase px-2.5 py-[3px] border ${
+            scheduled
+              ? 'text-accent border-accent/40 bg-accent/[0.14]'
+              : 'text-live border-live/40 bg-live/[0.14]'
+          }`}
+        >
+          {scheduled ? 'Agendado' : 'Ao vivo'}
+        </span>
+        <span className="font-bracket font-bold text-[10px] tracking-[0.1em] text-arena-dim uppercase whitespace-nowrap">
+          {formatDayHeader(match.scheduledAt)} · {isTimeTBD(match) ? 'a definir' : matchTime(match)}
         </span>
       </div>
-      <div className="flex items-center justify-center gap-3 mb-3">
-        <span className="flex items-center gap-2 flex-1 justify-end min-w-0">
-          <span className="text-xs font-bold text-white truncate font-bracket tracking-wide">{match.teamA?.name}</span>
-          <TeamCrest team={match.teamA} size="sm" />
+
+      {/* UMA grade pros dois andares: times e steppers alinham por coluna.
+          Era esse o desalinhamento — antes cada andar tinha o próprio flex. */}
+      <div className="grid grid-cols-[1fr_48px_1fr] items-center mt-4">
+        <BolaoTeam team={match.teamA} />
+        <span className="justify-self-center font-varsity text-[13px] text-brand-ink bg-gold px-2.5 py-[3px] [clip-path:polygon(7px_0,calc(100%-7px)_0,100%_50%,calc(100%-7px)_100%,7px_100%,0_50%)]">
+          VS
         </span>
-        <span className="text-gold font-bracket-display text-xs">VS</span>
-        <span className="flex items-center gap-2 flex-1 min-w-0">
-          <TeamCrest team={match.teamB} size="sm" />
-          <span className="text-xs font-bold text-white truncate font-bracket tracking-wide">{match.teamB?.name}</span>
-        </span>
+        <BolaoTeam team={match.teamB} />
       </div>
+
       {profile ? (
         <PalpiteWidget match={match} profile={profile} />
       ) : (
-        <p className="text-center text-xs text-arena-muted bg-white/5 px-3 py-2.5 cut-corner-sm">
+        <p className="text-center text-xs text-arena-muted bg-white/5 px-3 py-2.5 cut-corner-sm mt-4">
           Crie seu perfil no topo da página pra liberar os palpites
         </p>
       )}
+    </div>
+  )
+}
+
+function BolaoTeam({ team }) {
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <TeamCrest team={team} size="lg" />
+      <span className="font-bracket-display text-[17px] text-white tracking-[0.05em] whitespace-nowrap">
+        {team?.name || '—'}
+      </span>
     </div>
   )
 }

@@ -6,9 +6,9 @@ export default function Header({ title, subtitle, back = true }) {
     <header className="px-4 pt-5 pb-2 flex items-center gap-3">
       {back && <BackButton />}
       <div className="min-w-0">
-        <h1 className="font-bracket-display text-3xl text-white tracking-[0.03em] leading-none">{title}</h1>
+        <h1 className="font-varsity text-[30px] text-white tracking-[0.03em] leading-none">{title}</h1>
         {subtitle && (
-          <p className="font-bracket font-semibold text-[13px] text-arena-muted mt-1 tracking-[0.06em] uppercase">
+          <p className="font-body font-medium text-[13px] text-arena-muted mt-1 tracking-[0.06em]">
             {subtitle}
           </p>
         )}

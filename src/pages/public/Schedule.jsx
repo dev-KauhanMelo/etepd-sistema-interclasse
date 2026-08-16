@@ -4,14 +4,13 @@ import Header from '../../components/layout/Header'
 import EmptyState from '../../components/common/EmptyState'
 import Loader from '../../components/common/Loader'
 import SearchBar from '../../components/common/SearchBar'
-import TeamCrest from '../../components/match/TeamCrest'
+import MatchRow from '../../components/match/MatchRow'
 import { ClockIcon } from '../../components/common/Icons'
 import { useMatches } from '../../hooks/useMatches'
 import { useModalities } from '../../hooks/useModalities'
-import { isToday, matchTime, isTimeTBD } from '../../utils/formatDate'
+import { isToday } from '../../utils/formatDate'
 import { filterMatches, groupByDay } from '../../utils/matchFilters'
 import ProgramGrid from '../../components/schedule/ProgramGrid'
-import { MATCH_STATUS } from '../../utils/constants'
 
 const STATUS_TABS = [
   { key: 'all', label: 'Todos' },
@@ -105,28 +104,9 @@ export default function Schedule() {
                     <p className="font-bracket-display text-sm text-gold tracking-wide uppercase">{g.key}</p>
                     <span className="flex-1 h-px bg-white/[0.08]" />
                   </div>
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-2">
                     {g.items.map((m) => (
-                      <Link
-                        key={m.id}
-                        to={`/placar/${m.id}`}
-                        className="cut-tl bg-arena-panel border border-white/[0.07] flex items-center gap-3 px-3.5 py-2.5 hover:border-gold/40 transition"
-                      >
-                        <span className={`w-[48px] shrink-0 font-bracket-display leading-none ${isTimeTBD(m) ? 'text-[10px] text-arena-muted uppercase tracking-wide' : 'text-base text-gold'}`}>
-                          {matchTime(m)}
-                        </span>
-                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                          <TeamCrest team={m.teamA} size="sm" />
-                          <span className="font-bracket font-bold text-xs text-white truncate">{m.teamA?.name}</span>
-                          <span className="text-arena-dim text-xs font-bold px-0.5">×</span>
-                          <span className="font-bracket font-bold text-xs text-white truncate">{m.teamB?.name}</span>
-                          <TeamCrest team={m.teamB} size="sm" />
-                        </div>
-                        <div className="flex flex-col items-end gap-1 shrink-0 w-[74px]">
-                          <StatusTag status={m.status} />
-                          <LocationTag match={m} />
-                        </div>
-                      </Link>
+                      <MatchRow key={m.id} match={m} modName={modalities.find((x) => x.id === m.modalityId)?.name || ''} />
                     ))}
                   </div>
                 </div>
@@ -136,34 +116,6 @@ export default function Schedule() {
         </>
       )}
     </div>
-  )
-}
-
-// "ETE PD · Área externa" numa linha só espremia os times — o local quebra
-// em duas linhas curtas, alinhadas à direita.
-function LocationTag({ match }) {
-  const [venue, space] = match.space
-    ? [match.venue === 'unibra' ? 'UNIBRA' : 'ETE PD', match.space]
-    : String(match.location || '').split(' · ')
-  return (
-    <span className="font-bracket font-semibold text-[10px] text-arena-muted text-right leading-tight">
-      {venue}
-      {space && <><br />{space}</>}
-    </span>
-  )
-}
-
-function StatusTag({ status }) {
-  const live = status === 'live'
-  return (
-    <span
-      className={`inline-flex items-center gap-1 font-bracket font-bold text-[10px] tracking-[0.08em] uppercase px-2 py-0.5 ${
-        live ? 'bg-live text-white chevron-tag pr-3' : 'text-arena-muted border border-white/[0.12]'
-      }`}
-    >
-      {live && <span className="w-1 h-1 rounded-full bg-white pulse-live" />}
-      {MATCH_STATUS[status]?.label || status}
-    </span>
   )
 }
 
