@@ -8,12 +8,23 @@ export const MATCH_STATUS = {
 }
 
 // Formato da classificação de cada modalidade.
-// - 'classico': pontos corridos de esporte (V/E/D + saldo). É o padrão.
-// - 'pontos': tabela estilo LBFF (Free Fire) — pontos, booyahs e abates,
-//   sem confronto direto; a colocação sai da soma da própria turma.
 export const STANDINGS_FORMAT = {
-  classico: { label: 'Clássico (V/E/D + saldo)', hint: 'Futsal, vôlei, handebol…' },
-  pontos: { label: 'Pontos corridos (LBFF)', hint: 'Free Fire — pontos, booyah e abates' },
+  'mata-mata': {
+    label: 'Mata-mata (sem tabela)',
+    hint: 'Só chaveamento — quem perde está fora. Vale pra maioria das modalidades',
+  },
+  classico: {
+    label: 'Fase de grupos (V/E/D + saldo)',
+    hint: 'Esportes femininos que classificam as 2 melhores',
+  },
+  pontos: {
+    label: 'Pontos corridos (LBFF)',
+    hint: 'Free Fire — pontos, booyah e abates',
+  },
+  tempo: {
+    label: 'Por tempo (3 rounds)',
+    hint: 'Cubo Mágico — 3 tentativas cronometradas, vence a menor média',
+  },
 }
 
 export const PHASE_LABELS = {

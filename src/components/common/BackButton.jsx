@@ -11,7 +11,7 @@ export default function BackButton({ className = '' }) {
     <button
       onClick={goBack}
       aria-label="Voltar"
-      className={`shrink-0 w-9 h-9 rounded-xl bg-white border border-brand-mist/40 shadow-card flex items-center justify-center text-brand-deep active:scale-90 transition ${className}`}
+      className={`shrink-0 w-9 h-9 cut-corner-sm bg-arena-panel border border-white/10 flex items-center justify-center text-gold active:scale-90 transition ${className}`}
     >
       <ArrowLeftIcon className="w-5 h-5" />
     </button>

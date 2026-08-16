@@ -1,45 +1,14 @@
-import { Link } from 'react-router-dom'
-import MatchStatusBadge from './MatchStatusBadge'
-import TeamCrest from './TeamCrest'
-import FlipScore from './FlipScore'
-import { matchTime } from '../../utils/formatDate'
+import MatchRow from './MatchRow'
+import { useModalities } from '../../hooks/useModalities'
 
-// O card-assinatura do site: escudo de cada turma em cima do nome
-// (como nos jogos de basquete), placar gigante no centro.
+// Mantido como fachada: várias telas já importam LiveScoreCard. O desenho do
+// card vive em MatchRow, usado também pelo Cronograma — uma linguagem só.
 export default function LiveScoreCard({ match }) {
-  const isLive = match.status === 'live'
-
+  const { modalities } = useModalities()
+  const modName = modalities.find((m) => m.id === match.modalityId)?.name || ''
   return (
-    <Link to={`/placar/${match.id}`} className="block mb-3 animate-pop-in">
-      <div className={`bg-white rounded-2xl shadow-card border overflow-hidden transition hover:-translate-y-0.5 ${isLive ? 'border-live/30' : 'border-brand-mist/25 hover:border-brand/40'}`}>
-        {isLive && <div className="h-1 live-bar" />}
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <MatchStatusBadge status={match.status} />
-            <span className="text-xs font-medium text-brand-steel">
-              {matchTime(match)} · {match.location}
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <TeamSide team={match.teamA} />
-            <div className="flex items-center gap-1">
-              <FlipScore value={match.scoreA} size="sm" />
-              <span className="text-brand-mist text-sm font-bold px-0.5">×</span>
-              <FlipScore value={match.scoreB} size="sm" />
-            </div>
-            <TeamSide team={match.teamB} />
-          </div>
-        </div>
-      </div>
-    </Link>
-  )
-}
-
-function TeamSide({ team }) {
-  return (
-    <div className="flex-1 flex flex-col items-center gap-1.5 min-w-0">
-      <TeamCrest team={team} size="md" />
-      <span className="text-xs font-bold text-brand-deep truncate max-w-full">{team?.name || '-'}</span>
+    <div className="mb-2.5 animate-pop-in">
+      <MatchRow match={match} modName={modName} />
     </div>
   )
 }

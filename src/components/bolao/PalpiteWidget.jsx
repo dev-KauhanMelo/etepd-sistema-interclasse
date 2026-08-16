@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import Button from '../common/Button'
 import { SoccerBallIcon, CheckCircleIcon, FireIcon } from '../common/Icons'
 import { usePredictions } from '../../hooks/usePredictions'
 import { submitPrediction } from '../../services/predictionsService'
@@ -33,7 +32,7 @@ export default function PalpiteWidget({ match, profile }) {
   if (match.status === 'scheduled') {
     if (!profile) {
       return (
-        <Link to="/bolao" className="flex items-center justify-center gap-2 text-sm bg-brand/5 border border-dashed border-brand/40 text-brand font-semibold rounded-xl px-3 py-3">
+        <Link to="/bolao" className="flex items-center justify-center gap-2 text-sm bg-white/5 border border-dashed border-gold/40 text-gold font-bracket font-bold px-3 py-3 cut-corner-sm">
           <SoccerBallIcon className="w-4 h-4" />
           Entre no Bolão pra dar seu palpite neste jogo →
         </Link>
@@ -42,7 +41,7 @@ export default function PalpiteWidget({ match, profile }) {
     if (mine) {
       return (
         <div>
-          <p className="flex items-center justify-center gap-1.5 text-sm font-bold text-brand-deep bg-brand/5 border border-brand/20 rounded-xl px-3 py-2.5">
+          <p className="flex items-center justify-center gap-1.5 text-sm font-bold text-white bg-white/5 border border-gold/25 px-3 py-2.5 cut-corner-sm">
             <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
             Seu palpite: <span className="score-number">{mine.scoreA} × {mine.scoreB}</span>
           </p>
@@ -52,18 +51,21 @@ export default function PalpiteWidget({ match, profile }) {
     }
     return (
       <div>
-        <div className="flex items-center justify-center gap-3">
-          <Stepper value={scoreA} onChange={setScoreA} label={match.teamA?.name} />
-          <span className="text-brand-mist font-bold">×</span>
-          <Stepper value={scoreB} onChange={setScoreB} label={match.teamB?.name} />
+        <div className="grid grid-cols-[1fr_48px_1fr] items-center mt-3">
+          <Stepper value={scoreA} onChange={setScoreA} />
+          <span aria-hidden="true" />
+          <Stepper value={scoreB} onChange={setScoreB} />
         </div>
-        <Button onClick={save} disabled={saving} className="w-full mt-3 text-sm py-2 gap-1.5">
-          <SoccerBallIcon className="w-4 h-4" />
-          {saving ? 'Cravando...' : 'Cravar palpite'}
-        </Button>
+        <button
+          onClick={save}
+          disabled={saving}
+          className="w-full mt-4 cut-corner-sm bg-gold py-3 font-varsity text-[15px] text-brand-ink tracking-[0.06em] active:scale-[0.98] transition disabled:opacity-60"
+        >
+          {saving ? 'CRAVANDO…' : 'CRAVAR PALPITE →'}
+        </button>
         {error && <p className="text-xs text-red-500 text-center mt-2">{error}</p>}
-        <p className="text-[10px] text-brand-steel text-center mt-2">
-          Placar exato vale {POINTS_EXACT} pts · vencedor certo vale 2 pts. Fecha quando a bola rola!
+        <p className="text-center font-body font-medium text-xs text-arena-dim mt-2.5">
+          Placar exato vale {POINTS_EXACT} pts · vencedor certo vale 2 pts
         </p>
       </div>
     )
@@ -75,10 +77,10 @@ export default function PalpiteWidget({ match, profile }) {
   return (
     <div>
       {mine && (
-        <p className="text-center text-sm font-bold text-brand-deep mb-1">
+        <p className="text-center text-sm font-bold text-white mb-1">
           Seu palpite: <span className="score-number">{mine.scoreA} × {mine.scoreB}</span>
           {pts !== null && (
-            <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${pts > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-brand-paper text-brand-steel'}`}>
+            <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${pts > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-white/10 text-arena-muted'}`}>
               {pts === POINTS_EXACT ? `CRAVOU! +${pts} pts` : pts > 0 ? `+${pts} pts` : 'errou :('}
             </span>
           )}
@@ -89,25 +91,28 @@ export default function PalpiteWidget({ match, profile }) {
   )
 }
 
-function Stepper({ value, onChange, label }) {
+function Stepper({ value, onChange }) {
   return (
-    <div className="flex flex-col items-center gap-1">
-      <span className="text-[10px] font-bold text-brand-steel uppercase truncate max-w-[80px]">{label || '-'}</span>
-      <div className="flex items-center gap-1.5">
-        <StepBtn onClick={() => onChange(Math.max(0, value - 1))}>−</StepBtn>
-        <span className="score-number text-2xl text-brand-navy w-8 text-center">{value}</span>
-        <StepBtn onClick={() => onChange(Math.min(99, value + 1))}>+</StepBtn>
-      </div>
+    <div className="flex items-center justify-center gap-3">
+      <StepBtn onClick={() => onChange(Math.max(0, value - 1))} aria-label="Menos um">−</StepBtn>
+      <span className="font-jersey text-[28px] leading-none text-white min-w-[22px] text-center">{value}</span>
+      <StepBtn onClick={() => onChange(Math.min(99, value + 1))} primary aria-label="Mais um">+</StepBtn>
     </div>
   )
 }
 
-function StepBtn({ children, onClick }) {
+// O "+" é o botão dominante: é o que a pessoa aperta o tempo todo.
+function StepBtn({ children, onClick, primary = false, ...rest }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="w-8 h-8 rounded-full bg-brand-paper border border-brand-mist/50 text-brand-deep font-bold text-lg leading-none active:scale-90 transition"
+      {...rest}
+      className={`w-[34px] h-[34px] cut-corner-sm flex items-center justify-center font-bracket font-bold text-lg leading-none active:scale-90 transition border ${
+        primary
+          ? 'bg-gold/10 border-gold/45 text-gold'
+          : 'bg-white/[0.06] border-white/[0.16] text-arena-text'
+      }`}
     >
       {children}
     </button>
@@ -118,17 +123,17 @@ function CrowdBar({ match, crowd }) {
   if (crowd.total === 0) return null
   return (
     <div className="mt-3">
-      <div className="flex justify-between text-[10px] font-bold text-brand-steel mb-1">
+      <div className="flex justify-between text-[10px] font-bold text-arena-muted mb-1 font-bracket tracking-wide">
         <span>{match.teamA?.name} {crowd.a}%</span>
         {crowd.draw > 0 && <span>Empate {crowd.draw}%</span>}
         <span>{crowd.b}% {match.teamB?.name}</span>
       </div>
-      <div className="flex h-2 rounded-full overflow-hidden bg-brand-paper">
+      <div className="flex h-2 rounded-full overflow-hidden bg-white/10">
         <div style={{ width: `${crowd.a}%`, backgroundColor: match.teamA?.color || '#0552CB' }} />
-        <div style={{ width: `${crowd.draw}%` }} className="bg-brand-mist/60" />
+        <div style={{ width: `${crowd.draw}%` }} className="bg-white/25" />
         <div style={{ width: `${crowd.b}%`, backgroundColor: match.teamB?.color || '#182750' }} />
       </div>
-      <p className="text-[10px] text-brand-steel text-center mt-1 inline-flex items-center gap-1 w-full justify-center">
+      <p className="text-[10px] text-arena-muted text-center mt-1 inline-flex items-center gap-1 w-full justify-center font-bracket font-semibold">
         <FireIcon className="w-3 h-3 text-amber-500" />
         {crowd.total} {crowd.total === 1 ? 'palpite' : 'palpites'} da torcida
       </p>

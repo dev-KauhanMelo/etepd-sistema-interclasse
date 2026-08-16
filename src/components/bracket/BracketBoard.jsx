@@ -1,4 +1,6 @@
 import BracketCanvas from './BracketCanvas'
+import ZoomPane from './ZoomPane'
+import { BRACKET_CANVAS } from '../../utils/bracket'
 
 // Palco escuro do chaveamento: banner do título, dica de arrastar, o canvas
 // rolando na horizontal e a legenda. É o único bloco do site em tema escuro —
@@ -30,15 +32,16 @@ export default function BracketBoard({ title, subtitle, games, classes, onSlotCl
         </div>
       </div>
 
-      <p
-        className="text-center px-4 mt-3 mb-1 italic"
-        style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 12, color: 'rgba(239,245,249,0.5)' }}
-      >
-        Arraste para o lado para ver o chaveamento completo →
+      <p className="text-center px-4 mt-3 mb-1 font-body font-medium text-xs text-arena-muted">
+        Use dois dedos para dar zoom · arraste para navegar
       </p>
 
-      <div className="overflow-x-auto scrollbar-none px-4 pt-1 pb-4">
-        <BracketCanvas games={games} classes={classes} onSlotClick={onSlotClick} selectedGameId={selectedGameId} />
+      {/* O canvas tem 1210px: rolar de lado nunca mostrava a chave inteira.
+          Com zoom, dá pra afastar e ver tudo, ou aproximar e ler os nomes. */}
+      <div className="px-2 pt-1 pb-2">
+        <ZoomPane width={BRACKET_CANVAS.width} height={BRACKET_CANVAS.height}>
+          <BracketCanvas games={games} classes={classes} onSlotClick={onSlotClick} selectedGameId={selectedGameId} />
+        </ZoomPane>
       </div>
 
       <div

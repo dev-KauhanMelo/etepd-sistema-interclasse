@@ -73,8 +73,8 @@ function ScoreControl({ team, score, onAdjust }) {
       <p className="text-xs font-medium text-slate-500 mb-2">{team?.name}</p>
       <p className="score-number text-5xl mb-3" style={{ color: team?.color }}>{score ?? 0}</p>
       <div className="flex gap-2 justify-center">
-        <button onClick={() => onAdjust(-1)} className="w-10 h-10 rounded-full bg-slate-100 font-bold">−</button>
-        <button onClick={() => onAdjust(1)} className="w-10 h-10 rounded-full bg-brand text-white font-bold">+</button>
+        <button onClick={() => onAdjust(-1)} className="w-14 h-14 rounded-full bg-slate-100 text-xl font-bold active:scale-90 transition">−</button>
+        <button onClick={() => onAdjust(1)} className="w-16 h-16 rounded-full bg-brand text-white text-2xl font-bold shadow-md active:scale-90 transition">+</button>
       </div>
     </div>
   )

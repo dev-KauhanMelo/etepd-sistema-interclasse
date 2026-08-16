@@ -2,6 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== Fontes do JIPD, servidas pelo próprio site =====
+   Vêm da coleção local do projeto (não do Google Fonts): carregam mais rápido,
+   funcionam offline e dão ao evento uma voz que nenhum outro site tem.
+   `swap` para o texto aparecer imediatamente com a fonte de fallback. */
+
+/* Voz de display: colegial americana, com contorno. Cobre º, × e acentos —
+   por isso pode escrever "3º B" e "Ginásio" sem quebrar. Títulos de tela. */
+@font-face {
+  font-family: 'Varsity JIPD';
+  src: url('/fonts/varsity.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* Números de camisa de time. Só tem dígitos e maiúsculas sem acento —
+   por isso é usada EXCLUSIVAMENTE em placares e contadores. */
+@font-face {
+  font-family: 'Jersey JIPD';
+  src: url('/fonts/jersey-m54.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* Voz de leitura: nomes de modalidade, subtítulos e texto corrido. */
+@font-face {
+  font-family: 'Utendo';
+  src: url('/fonts/utendo-medium.ttf') format('truetype');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Utendo';
+  src: url('/fonts/utendo-semibold.ttf') format('truetype');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Utendo';
+  src: url('/fonts/utendo-bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
 html, body, #root { height: 100%; }
 
 @layer utilities {
@@ -130,6 +173,54 @@ html, body, #root { height: 100%; }
   .scrollbar-none { scrollbar-width: none; }
   .scrollbar-none::-webkit-scrollbar { display: none; }
 
+  /* ===== Modo Arena: a linguagem do chaveamento (chanfros, chevrons,
+     losangos) vira a identidade do site público inteiro. ===== */
+
+  /* Canto chanfrado padrão dos cards (substitui rounded-2xl no público) */
+  .cut-corner {
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  }
+  .cut-corner-sm {
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  }
+  /* Linhas de lista: só o canto superior esquerdo chanfrado */
+  .cut-tl {
+    clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
+  }
+  /* Tag chevron (AO VIVO etc.) */
+  .chevron-tag {
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%);
+  }
+  /* Malha de losangos sutil sobre o fundo escuro (mesma do .bracket-stage) */
+  .arena-mesh {
+    background-image:
+      linear-gradient(60deg, rgba(255, 255, 255, 0.03) 25%, transparent 25.5%, transparent 74.5%, rgba(255, 255, 255, 0.03) 75%),
+      linear-gradient(120deg, rgba(255, 255, 255, 0.03) 25%, transparent 25.5%, transparent 74.5%, rgba(255, 255, 255, 0.03) 75%);
+    background-size: 46px 80px, 46px 80px;
+  }
+  /* Marcador de seção: barrinha amarela inclinada + título Anton */
+  .section-slash {
+    width: 4px;
+    height: 16px;
+    background: #F5EA15;
+    transform: skewX(-14deg);
+  }
+
+  /* Ticker AO VIVO do topo: marquee em CSS puro (roda fora da main thread).
+     O conteúdo é duplicado no markup; a faixa anda -50% e recomeça. */
+  .ticker-track {
+    display: inline-flex;
+    white-space: nowrap;
+    animation: ticker-slide 18s linear infinite;
+  }
+  @keyframes ticker-slide {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track { animation: none; }
+  }
+
   /* Palco do chaveamento: fundo escuro com padrão de losangos (as duas
      últimas camadas fazem o "hexágono"). É o único bloco do site em tema
      escuro — o mata-mata é um momento de torneio. */
@@ -153,7 +244,7 @@ html, body, #root { height: 100%; }
 
 /* Barra "AO VIVO" que corre no card de jogo ao vivo */
 .live-bar {
-  background: linear-gradient(90deg, transparent, #EF4444 40%, #EF4444 60%, transparent);
+  background: linear-gradient(90deg, transparent, #FF3B3B 40%, #FF3B3B 60%, transparent);
   background-size: 200% 100%;
   animation: live-bar 2.2s linear infinite;
 }

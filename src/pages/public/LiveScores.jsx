@@ -1,103 +1,129 @@
 import { useState } from 'react'
-import Header from '../../components/layout/Header'
 import LiveScoreCard from '../../components/match/LiveScoreCard'
 import EmptyState from '../../components/common/EmptyState'
 import Loader from '../../components/common/Loader'
-import SearchBar from '../../components/common/SearchBar'
+import FilterBar from '../../components/common/FilterBar'
+import ShowMore from '../../components/common/ShowMore'
+import BackButton from '../../components/common/BackButton'
 import { BarsIcon } from '../../components/common/Icons'
 import { useMatches } from '../../hooks/useMatches'
 import { useModalities } from '../../hooks/useModalities'
 import { isToday } from '../../utils/formatDate'
 import { filterMatches } from '../../utils/matchFilters'
 
+const SEGMENTS = [
+  { key: 'live', label: 'Ao vivo' },
+  { key: 'today', label: 'Hoje' },
+  { key: 'finished', label: 'Encerrados' },
+]
+
+// Quantos jogos a lista mostra antes do "ver todos"
+const PAGE = 6
+
 export default function LiveScores() {
   const { matches, loading } = useMatches()
   const { modalities } = useModalities()
+  const [segment, setSegment] = useState('today')
   const [query, setQuery] = useState('')
   const [modalityFilter, setModalityFilter] = useState('all')
+  const [venueFilter, setVenueFilter] = useState('all')
+  const [showAll, setShowAll] = useState(false)
 
   if (loading) return <Loader />
 
-  const visible = filterMatches(matches, { query, modalityId: modalityFilter, modalities })
+  const bySegment =
+    segment === 'live'
+      ? matches.filter((m) => m.status === 'live')
+      : segment === 'finished'
+        ? matches.filter((m) => m.status === 'finished')
+        : matches.filter((m) => isToday(m.scheduledAt) || m.status === 'live')
 
-  const live = visible.filter((m) => m.status === 'live')
-  const todayScheduled = visible
-    .filter((m) => m.status === 'scheduled' && isToday(m.scheduledAt))
-    .sort((a, b) => (a.scheduledAt?.seconds || 0) - (b.scheduledAt?.seconds || 0))
-  const todayFinished = visible.filter((m) => m.status === 'finished' && isToday(m.scheduledAt))
+  const visible = filterMatches(bySegment, { query, modalityId: modalityFilter, modalities })
+    .filter((m) => venueFilter === 'all' || m.venue === venueFilter)
+    .sort((a, b) => (a.status === 'live' ? -1 : 1) - (b.status === 'live' ? -1 : 1))
 
-  const nothingToday = live.length + todayScheduled.length + todayFinished.length === 0
-  const isFiltering = query || modalityFilter !== 'all'
+  const shown = showAll ? visible : visible.slice(0, PAGE)
+  const liveCount = matches.filter((m) => m.status === 'live').length
+
+  // Só oferece filtrar pelas modalidades que existem neste segmento
+  const modalityOptions = [
+    { value: 'all', label: 'Todas' },
+    ...modalities
+      .filter((m) => bySegment.some((x) => x.modalityId === m.id))
+      .map((m) => ({ value: m.id, label: m.name })),
+  ]
 
   return (
     <div>
-      <Header title="Placar ao vivo" subtitle="Tudo que está acontecendo hoje" />
+      <header className="px-4 pt-5 pb-0 flex items-center gap-3">
+        <BackButton />
+        <div>
+          <h1 className="font-varsity text-[30px] text-white tracking-[0.03em] leading-none flex items-center gap-2.5">
+            {liveCount > 0 && <span className="w-2.5 h-2.5 rounded-full bg-live pulse-live" />}
+            PLACAR
+          </h1>
+          <p className="font-body font-medium text-[13px] text-arena-muted mt-1">
+            {liveCount > 0 ? `${liveCount} jogo${liveCount > 1 ? 's' : ''} rolando agora` : 'Tudo que está acontecendo'}
+          </p>
+        </div>
+      </header>
 
-      <div className="px-4 pt-1">
-        <SearchBar value={query} onChange={setQuery} placeholder="Buscar turma, local ou modalidade…" />
-      </div>
-
-      <div className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-none">
-        <Chip active={modalityFilter === 'all'} onClick={() => setModalityFilter('all')}>Todas</Chip>
-        {modalities.map((m) => (
-          <Chip key={m.id} active={modalityFilter === m.id} onClick={() => setModalityFilter(m.id)}>
-            {m.name}
-          </Chip>
+      {/* Segmentado AO VIVO / HOJE / ENCERRADOS */}
+      <div className="mx-4 mt-4 cut-corner-sm bg-arena-panel p-1 flex gap-1">
+        {SEGMENTS.map((s) => (
+          <button
+            key={s.key}
+            onClick={() => { setSegment(s.key); setShowAll(false) }}
+            className={`flex-1 py-[7px] font-bracket font-bold text-xs tracking-[0.1em] uppercase transition ${
+              segment === s.key ? 'cut-corner-sm bg-gold text-brand-ink' : 'text-arena-muted hover:text-white'
+            }`}
+          >
+            {s.label}
+          </button>
         ))}
       </div>
 
-      <div className="p-4 pt-0">
-        {nothingToday && (
+      <div className="px-4 pt-3">
+        <FilterBar
+          query={query}
+          onQueryChange={setQuery}
+          placeholder="Buscar turma, local ou modalidade…"
+          resultCount={visible.length}
+          totalCount={bySegment.length}
+          groups={[
+            { key: 'mod', label: 'Modalidade', value: modalityFilter, onChange: setModalityFilter, options: modalityOptions },
+            {
+              key: 'venue', label: 'Local', value: venueFilter, onChange: setVenueFilter,
+              options: [
+                { value: 'all', label: 'Todos' },
+                { value: 'pd', label: 'ETE PD' },
+                { value: 'unibra', label: 'UNIBRA' },
+              ],
+            },
+          ]}
+        />
+      </div>
+
+      <div className="px-4 pt-3 pb-4">
+        {visible.length === 0 ? (
           <EmptyState
             icon={<BarsIcon className="w-10 h-10" />}
-            title={isFiltering ? 'Nenhum jogo encontrado' : 'Nenhum jogo hoje'}
-            subtitle={isFiltering ? 'Tente outra busca ou modalidade' : 'Confira a tabela completa no Cronograma'}
+            title={segment === 'live' ? 'Nenhum jogo ao vivo' : segment === 'today' ? 'Nenhum jogo hoje' : 'Nenhum jogo encontrado'}
+            subtitle={
+              query || modalityFilter !== 'all' || venueFilter !== 'all'
+                ? 'Tente outra busca ou filtro'
+                : segment === 'today'
+                  ? 'Os jogos começam seg · 17/08. Veja a programação completa na Tabela'
+                  : 'Confira a tabela completa em Tabela'
+            }
           />
-        )}
-
-        {live.length > 0 && (
+        ) : (
           <>
-            <GroupTitle live>Rolando agora</GroupTitle>
-            {live.map((m) => <LiveScoreCard key={m.id} match={m} />)}
-          </>
-        )}
-
-        {todayScheduled.length > 0 && (
-          <>
-            <GroupTitle>Ainda hoje</GroupTitle>
-            {todayScheduled.map((m) => <LiveScoreCard key={m.id} match={m} />)}
-          </>
-        )}
-
-        {todayFinished.length > 0 && (
-          <>
-            <GroupTitle>Já encerrados</GroupTitle>
-            {todayFinished.map((m) => <LiveScoreCard key={m.id} match={m} />)}
+            {shown.map((m) => <LiveScoreCard key={m.id} match={m} />)}
+            <ShowMore hidden={visible.length - shown.length} onClick={() => setShowAll(true)} />
           </>
         )}
       </div>
     </div>
-  )
-}
-
-function GroupTitle({ children, live = false }) {
-  return (
-    <h2 className="headline text-base text-brand-navy mt-4 mb-3 flex items-center gap-2">
-      {live && <span className="w-2.5 h-2.5 bg-live rounded-full pulse-live not-italic" />}
-      {children}
-    </h2>
-  )
-}
-
-function Chip({ active, children, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition ${
-        active ? 'bg-brand text-white shadow-sm' : 'bg-white text-brand-steel border border-brand-mist/40'
-      }`}
-    >
-      {children}
-    </button>
   )
 }

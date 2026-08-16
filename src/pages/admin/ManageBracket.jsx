@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import Loader from '../../components/common/Loader'
+import DragScroll from '../../components/common/DragScroll'
 import BracketBoard from '../../components/bracket/BracketBoard'
 import { useAuth } from '../../context/AuthContext'
 import { useClasses } from '../../hooks/useClasses'
@@ -148,19 +149,21 @@ export default function ManageBracket() {
         Monte o mata-mata da modalidade. Marcou o vencedor de um jogo? A turma já entra sozinha na chave seguinte.
       </p>
 
-      <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-none">
-        {modalities.map((m) => (
-          <button
-            key={m.id}
-            onClick={() => switchModality(m.id)}
-            className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition ${
-              activeModality === m.id ? 'bg-brand text-white shadow-sm' : 'bg-white text-slate-500 border border-slate-200'
-            }`}
-          >
-            {m.name}
-          </button>
-        ))}
-      </div>
+      <DragScroll className="pb-3">
+        <div className="flex gap-2 w-max">
+          {modalities.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => switchModality(m.id)}
+              className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition ${
+                activeModality === m.id ? 'bg-brand text-white shadow-sm' : 'bg-white text-slate-500 border border-slate-200'
+              }`}
+            >
+              {m.name}
+            </button>
+          ))}
+        </div>
+      </DragScroll>
 
       {!draft ? (
         <Loader />

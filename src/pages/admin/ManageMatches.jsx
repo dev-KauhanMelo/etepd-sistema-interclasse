@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import SearchBar from '../../components/common/SearchBar'
+import DragScroll from '../../components/common/DragScroll'
 import MatchForm from '../../components/admin/MatchForm'
 import MatchStatusBadge from '../../components/match/MatchStatusBadge'
 import { useMatches } from '../../hooks/useMatches'
@@ -55,24 +56,29 @@ export default function ManageMatches() {
         onChange={setQuery}
         placeholder="Buscar turma, local ou modalidade…"
         className="mb-3"
+        light
       />
 
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-        {STATUS_TABS.map((t) => (
-          <Chip key={t.key} active={statusFilter === t.key} onClick={() => setStatusFilter(t.key)}>
-            {t.label}
-          </Chip>
-        ))}
-      </div>
+      <DragScroll className="pb-2">
+        <div className="flex gap-2 w-max">
+          {STATUS_TABS.map((t) => (
+            <Chip key={t.key} active={statusFilter === t.key} onClick={() => setStatusFilter(t.key)}>
+              {t.label}
+            </Chip>
+          ))}
+        </div>
+      </DragScroll>
 
-      <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-none">
-        <Chip active={modalityFilter === 'all'} onClick={() => setModalityFilter('all')}>Todas</Chip>
-        {modalities.map((m) => (
-          <Chip key={m.id} active={modalityFilter === m.id} onClick={() => setModalityFilter(m.id)}>
-            {m.name}
-          </Chip>
-        ))}
-      </div>
+      <DragScroll className="pb-3">
+        <div className="flex gap-2 w-max">
+          <Chip active={modalityFilter === 'all'} onClick={() => setModalityFilter('all')}>Todas</Chip>
+          {modalities.map((m) => (
+            <Chip key={m.id} active={modalityFilter === m.id} onClick={() => setModalityFilter(m.id)}>
+              {m.name}
+            </Chip>
+          ))}
+        </div>
+      </DragScroll>
 
       <p className="text-xs text-slate-400 mb-2">
         {filtered.length} {filtered.length === 1 ? 'jogo' : 'jogos'}

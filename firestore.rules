@@ -9,7 +9,19 @@ service cloud.firestore {
 
     match /classes/{doc}       { allow read: if true; allow write: if isAdmin(); }
     match /modalities/{doc}    { allow read: if true; allow write: if isAdmin(); }
-    match /matches/{doc}       { allow read: if true; allow write: if isAdmin(); }
+    // Jogos: leitura pública, escrita só de admin — com UMA exceção: o botão
+    // de torcida. Qualquer pessoa pode dar um update que mexa APENAS nos
+    // contadores de torcida, somando no máximo +1 por vez.
+    match /matches/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+      allow update: if
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cheerCountA', 'cheerCountB']) &&
+        request.resource.data.get('cheerCountA', 0) >= resource.data.get('cheerCountA', 0) &&
+        request.resource.data.get('cheerCountA', 0) <= resource.data.get('cheerCountA', 0) + 1 &&
+        request.resource.data.get('cheerCountB', 0) >= resource.data.get('cheerCountB', 0) &&
+        request.resource.data.get('cheerCountB', 0) <= resource.data.get('cheerCountB', 0) + 1;
+    }
     match /standings/{doc}     { allow read: if true; allow write: if isAdmin(); }
     match /brackets/{doc}      { allow read: if true; allow write: if isAdmin(); }
     match /announcements/{doc} { allow read: if true; allow write: if isAdmin(); }

@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, increment, serverTimestamp, updateDoc } from 'firebase/firestore'
 import { db } from './firebase'
 
 export async function createMatch(data) {
@@ -36,4 +36,13 @@ export async function adjustScore(match, side, delta, uid) {
 export async function addMatchNote(match, note, uid) {
   const notes = [...(match.matchNotes || []), note]
   return updateMatch(match.id, { matchNotes: notes }, uid)
+}
+
+// Torcida: qualquer pessoa incrementa o contador do seu time (1 toque por
+// dispositivo, controlado no componente via localStorage). As rules do
+// Firestore só deixam passar updates que mexem APENAS nesses dois campos,
+// somando no máximo +1 — o resto do documento continua só-admin.
+export async function cheerFor(matchId, side) {
+  const field = side === 'A' ? 'cheerCountA' : 'cheerCountB'
+  return updateDoc(doc(db, 'matches', matchId), { [field]: increment(1) })
 }

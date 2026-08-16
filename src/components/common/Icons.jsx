@@ -114,9 +114,9 @@ export function FlameIcon({ className = 'w-6 h-6' }) {
 
 export function SearchIcon({ className = 'w-6 h-6' }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.2" />
-      <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+      <path d="m21 21-4.34-4.34" />
+      <circle cx="11" cy="11" r="8" />
     </svg>
   )
 }
@@ -125,6 +125,47 @@ export function CloseIcon({ className = 'w-6 h-6' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+// Funil: abre o painel de filtros
+export function FunnelIcon({ className = 'w-6 h-6' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z" />
+    </svg>
+  )
+}
+
+// Lista: "ver todos"
+export function ListIcon({ className = 'w-6 h-6' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 5h.01" /><path d="M3 12h.01" /><path d="M3 19h.01" />
+      <path d="M8 5h13" /><path d="M8 12h13" /><path d="M8 19h13" />
+    </svg>
+  )
+}
+
+// Booyah: a vitória no Free Fire. Usa a arte oficial de public/boyahh.png —
+// é uma marca com forma e cor próprias, que um ícone de traço não reproduz.
+export function BooyahIcon({ className = 'w-4 h-4' }) {
+  return <img src="/boyahh.png" alt="" aria-hidden="true" className={`${className} object-contain shrink-0`} />
+}
+
+// Lupa com zoom (+/−) para o chaveamento
+export function ZoomInIcon({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.34-4.34" /><path d="M11 8v6M8 11h6" />
+    </svg>
+  )
+}
+export function ZoomOutIcon({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.34-4.34" /><path d="M8 11h6" />
     </svg>
   )
 }
