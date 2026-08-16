@@ -1,4 +1,5 @@
 import TeamCrest from '../match/TeamCrest'
+import { BooyahIcon } from '../common/Icons'
 import { POINTS_FIELDS } from '../../utils/standings'
 
 // Tabela de classificação por pontos (Free Fire), no espírito da LBFF:
@@ -26,9 +27,10 @@ export default function PointsTable({ standings, teamOf, title, subtitle }) {
         {POINTS_FIELDS.map((f) => (
           <span
             key={f.key}
-            className="w-12 shrink-0 text-center font-bracket font-bold text-[11px] tracking-wider text-white/70"
+            className="w-12 shrink-0 flex items-center justify-center font-bracket font-bold text-[11px] tracking-wider text-white/70"
+            title={f.label}
           >
-            {f.short}
+            {f.key === 'booyahs' ? <BooyahIcon className="w-4 h-4 text-gold" aria-label="Booyah" /> : f.short}
           </span>
         ))}
       </div>

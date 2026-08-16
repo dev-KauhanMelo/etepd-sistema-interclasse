@@ -10,7 +10,8 @@ import { useMatches } from '../../hooks/useMatches'
 import { useAllPredictions } from '../../hooks/usePredictions'
 import { getFanProfile } from '../../utils/fanProfile'
 import { buildBolaoRanking } from '../../utils/bolao'
-import SearchBar from '../../components/common/SearchBar'
+import FilterBar from '../../components/common/FilterBar'
+import ShowMore from '../../components/common/ShowMore'
 import { useModalities } from '../../hooks/useModalities'
 import { filterMatches } from '../../utils/matchFilters'
 import { matchTime, isTimeTBD, formatDayHeader } from '../../utils/formatDate'
@@ -20,6 +21,7 @@ export default function Bolao() {
   const [tab, setTab] = useState('palpites')
   const [query, setQuery] = useState('')
   const [modalityFilter, setModalityFilter] = useState('all')
+  const [showAll, setShowAll] = useState(false)
   const { matches, loading } = useMatches()
   const { modalities } = useModalities()
   const { predictions } = useAllPredictions()
@@ -67,15 +69,18 @@ export default function Bolao() {
             )}
 
             <GroupTitle>Jogos abertos pra palpite</GroupTitle>
-            <SearchBar value={query} onChange={setQuery} placeholder="Buscar turma ou modalidade…" className="mb-2" />
-            <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-none">
-              <FilterChip active={modalityFilter === 'all'} onClick={() => setModalityFilter('all')}>Todas</FilterChip>
-              {modalities.map((m) => (
-                <FilterChip key={m.id} active={modalityFilter === m.id} onClick={() => setModalityFilter(m.id)}>
-                  {m.name}
-                </FilterChip>
-              ))}
-            </div>
+            <FilterBar
+              query={query}
+              onQueryChange={setQuery}
+              placeholder="Buscar turma ou modalidade…"
+              resultCount={open.length}
+              totalCount={matches.filter((m) => m.status === 'scheduled').length}
+              groups={[{
+                key: 'mod', label: 'Modalidade', value: modalityFilter, onChange: setModalityFilter,
+                options: [{ value: 'all', label: 'Todas' }, ...modalities.map((m) => ({ value: m.id, label: m.name }))],
+              }]}
+            />
+            <div className="h-3" />
             {open.length === 0 ? (
               <EmptyState
                 icon={<NodesIcon className="w-10 h-10" />}
@@ -83,7 +88,12 @@ export default function Bolao() {
                 subtitle="Assim que a comissão agendar novos jogos, eles aparecem aqui"
               />
             ) : (
-              open.map((m) => <BolaoMatchCard key={m.id} match={m} profile={profile} />)
+              <>
+                {(showAll ? open : open.slice(0, 5)).map((m) => (
+                  <BolaoMatchCard key={m.id} match={m} profile={profile} />
+                ))}
+                <ShowMore hidden={showAll ? 0 : Math.max(0, open.length - 5)} onClick={() => setShowAll(true)} label="Ver todos pra palpitar" />
+              </>
             )}
           </>
         ) : (
@@ -205,18 +215,6 @@ function GroupTitle({ children, live = false }) {
   )
 }
 
-function FilterChip({ active, children, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`shrink-0 px-3.5 py-[5px] font-bracket font-bold text-xs tracking-[0.08em] uppercase transition ${
-        active ? 'cut-corner-sm bg-gold text-brand-ink' : 'border border-white/[0.12] text-arena-muted hover:text-white'
-      }`}
-    >
-      {children}
-    </button>
-  )
-}
 
 function TabButton({ active, children, onClick }) {
   return (

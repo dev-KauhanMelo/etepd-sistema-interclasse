@@ -19,17 +19,25 @@ export default function MatchRow({ match, modName }) {
     ? [match.venue === 'unibra' ? 'UNIBRA' : 'ETE PD', match.space]
     : String(match.location || '').split(' · ')
 
+  // Jogo rolando: o card ganha o campo dividido nas cores das duas turmas,
+  // como o hero da Home. É o único estado que merece esse peso visual.
+  const colorA = match.teamA?.color || '#DC2626'
+  const colorB = match.teamB?.color || '#2563EB'
+
   return (
     <Link
       to={`/placar/${match.id}`}
-      className={`block cut-corner bg-arena-panel border transition hover:border-gold/40 ${
-        live ? 'border-live/35' : 'border-white/[0.07]'
+      className={`block cut-corner relative overflow-hidden border transition hover:border-gold/40 ${
+        live ? 'border-live/35' : 'border-white/[0.07] bg-arena-panel'
       } ${finished ? 'opacity-70' : ''}`}
+      style={live ? { background: `linear-gradient(104deg, ${colorA} 0%, ${colorA} 46%, ${colorB} 54%, ${colorB} 100%)` } : undefined}
     >
-      {live && <div className="h-[3px] live-bar" />}
+      {/* Véu escuro por cima das cores: garante o contraste do placar branco */}
+      {live && <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,15,25,0.42),rgba(11,15,25,0.88))]" />}
+      {live && <div className="relative h-[3px] live-bar" />}
 
       {/* Andar 1 — meta */}
-      <div className="flex items-center justify-between gap-2 px-3.5 py-2.5 border-b border-white/[0.06]">
+      <div className={`relative flex items-center justify-between gap-2 px-3.5 py-2.5 ${live ? 'border-b border-white/15' : 'border-b border-white/[0.06]'}`}>
         <span
           className={`inline-flex items-center gap-1.5 font-bracket font-bold text-[10px] tracking-[0.14em] uppercase ${
             live ? 'text-live' : scheduled ? 'text-accent' : 'text-arena-muted'
@@ -44,17 +52,20 @@ export default function MatchRow({ match, modName }) {
       </div>
 
       {/* Andar 2 — confronto */}
-      <div className="flex items-center justify-center gap-3 px-3 pt-3.5 pb-4">
+      <div className="relative flex items-center justify-center gap-2.5 px-3 pt-3.5 pb-4">
         <TeamSide team={match.teamA} align="end" winner={winner === 'A'} />
         {scheduled ? (
           <span className="font-varsity text-sm text-gold shrink-0">VS</span>
         ) : (
-          <span className="flex items-center gap-2 shrink-0">
-            <span className={`font-jersey text-[30px] leading-none ${winner === 'A' ? 'text-gold' : 'text-white'}`}>
+          // O "×" fica numa caixa de altura fixa e centralizado: a fonte Jersey
+          // (só dígitos) e a do "×" têm métricas diferentes, e alinhá-los pela
+          // linha de base jogava o "×" pra baixo, parecendo um ponto solto.
+          <span className="flex items-center gap-2 shrink-0 leading-none">
+            <span className={`font-jersey text-[32px] leading-none ${winner === 'A' ? 'text-gold' : 'text-white'}`}>
               {match.scoreA ?? 0}
             </span>
-            <span className="font-bracket-display text-base text-arena-dim leading-none">×</span>
-            <span className={`font-jersey text-[30px] leading-none ${winner === 'B' ? 'text-gold' : 'text-white'}`}>
+            <span className="font-bracket-display text-lg text-gold/70 leading-none flex items-center h-[32px]">×</span>
+            <span className={`font-jersey text-[32px] leading-none ${winner === 'B' ? 'text-gold' : 'text-white'}`}>
               {match.scoreB ?? 0}
             </span>
           </span>
@@ -63,7 +74,7 @@ export default function MatchRow({ match, modName }) {
       </div>
 
       {modName && (
-        <p className="px-3.5 pb-2.5 -mt-1 text-center font-body font-medium text-[11px] text-arena-dim">
+        <p className={`relative px-3.5 pb-2.5 -mt-1 text-center font-body font-medium text-[11px] ${live ? 'text-white/60' : 'text-arena-dim'}`}>
           {modName}
         </p>
       )}

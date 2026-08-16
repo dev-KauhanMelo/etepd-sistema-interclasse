@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import Header from '../../components/layout/Header'
 import EmptyState from '../../components/common/EmptyState'
 import Loader from '../../components/common/Loader'
-import SearchBar from '../../components/common/SearchBar'
+import FilterBar from '../../components/common/FilterBar'
+import ShowMore from '../../components/common/ShowMore'
 import MatchRow from '../../components/match/MatchRow'
 import { ClockIcon } from '../../components/common/Icons'
 import { useMatches } from '../../hooks/useMatches'
@@ -26,6 +27,8 @@ export default function Schedule() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [query, setQuery] = useState('')
   const [tab, setTab] = useState('grade')
+  const [venueFilter, setVenueFilter] = useState('all')
+  const [showAll, setShowAll] = useState(false)
 
   if (loading) return <Loader />
 
@@ -35,7 +38,11 @@ export default function Schedule() {
     : filterMatches(matches, { status: statusFilter })
 
   const filtered = filterMatches(byStatus, { query, modalityId: modalityFilter, modalities })
+    .filter((m) => venueFilter === 'all' || m.venue === venueFilter)
   const groups = groupByDay(filtered)
+  // Lista longa: mostra os primeiros dias e guarda o resto atrás do "ver todos"
+  const visibleGroups = showAll ? groups : groups.slice(0, 2)
+  const hiddenCount = groups.slice(visibleGroups.length).reduce((n, g) => n + g.items.length, 0)
   const isFiltering = query || modalityFilter !== 'all' || statusFilter !== 'all'
 
   return (
@@ -54,43 +61,30 @@ export default function Schedule() {
       ) : (
         <>
           <div className="px-4 pt-3">
-            <SearchBar value={query} onChange={setQuery} placeholder="Buscar turma, local ou modalidade…" />
+            <FilterBar
+              query={query}
+              onQueryChange={setQuery}
+              placeholder="Buscar turma, local ou modalidade…"
+              resultCount={filtered.length}
+              totalCount={matches.length}
+              groups={[
+                {
+                  key: 'status', label: 'Momento', value: statusFilter, onChange: (v) => { setStatusFilter(v); setShowAll(false) },
+                  options: STATUS_TABS.map((t) => ({ value: t.key, label: t.label })),
+                },
+                {
+                  key: 'mod', label: 'Modalidade', value: modalityFilter, onChange: setModalityFilter,
+                  options: [{ value: 'all', label: 'Todas' }, ...modalities.map((m) => ({ value: m.id, label: m.name }))],
+                },
+                {
+                  key: 'venue', label: 'Local', value: venueFilter, onChange: setVenueFilter,
+                  options: [{ value: 'all', label: 'Todos' }, { value: 'pd', label: 'ETE PD' }, { value: 'unibra', label: 'UNIBRA' }],
+                },
+              ]}
+            />
           </div>
 
-          {/* Filtro por momento do jogo: segmentado, mesma linguagem do Placar */}
-          <div className="mx-4 mt-3 cut-corner-sm bg-arena-panel p-1 flex gap-1">
-            {STATUS_TABS.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => setStatusFilter(t.key)}
-                className={`flex-1 py-[6px] font-bracket font-bold text-[11px] tracking-[0.08em] uppercase transition ${
-                  statusFilter === t.key ? 'cut-corner-sm bg-gold text-brand-ink' : 'text-arena-muted hover:text-white'
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Filtro por modalidade, com rótulo pra separar do bloco de cima */}
-          <p className="px-4 pt-3 pb-1.5 font-bracket font-bold text-[10px] tracking-[0.2em] text-arena-dim uppercase">
-            Modalidade
-          </p>
-          <div className="flex gap-2 overflow-x-auto px-4 pb-2 scrollbar-none">
-            <Chip active={modalityFilter === 'all'} onClick={() => setModalityFilter('all')}>Todas</Chip>
-            {modalities.map((m) => (
-              <Chip key={m.id} active={modalityFilter === m.id} onClick={() => setModalityFilter(m.id)}>
-                {m.name}
-              </Chip>
-            ))}
-          </div>
-
-          <div className="px-4 pb-4 pt-1">
-            <p className="font-bracket font-semibold text-xs text-arena-muted mb-2">
-              {filtered.length} {filtered.length === 1 ? 'jogo' : 'jogos'}
-              {isFiltering && ` de ${matches.length}`}
-            </p>
-
+          <div className="px-4 pb-4 pt-3">
             {filtered.length === 0 ? (
               <EmptyState
                 icon={<ClockIcon className="w-10 h-10" />}
@@ -98,7 +92,7 @@ export default function Schedule() {
                 subtitle={query ? `Nada bate com "${query}"` : 'Tente outro filtro'}
               />
             ) : (
-              groups.map((g) => (
+              visibleGroups.map((g) => (
                 <div key={g.key} className="mb-5">
                   <div className="flex items-center gap-2.5 mb-2">
                     <p className="font-bracket-display text-sm text-gold tracking-wide uppercase">{g.key}</p>
@@ -112,6 +106,7 @@ export default function Schedule() {
                 </div>
               ))
             )}
+            <ShowMore hidden={hiddenCount} onClick={() => setShowAll(true)} label="Ver todos os jogos" />
           </div>
         </>
       )}
