@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import Loader from '../../components/common/Loader'
-import DragScroll from '../../components/common/DragScroll'
+import FilterBar from '../../components/common/FilterBar'
+import { TrophyIcon } from '../../components/common/Icons'
 import BracketBoard from '../../components/bracket/BracketBoard'
 import { useAuth } from '../../context/AuthContext'
 import { useClasses } from '../../hooks/useClasses'
@@ -149,21 +150,20 @@ export default function ManageBracket() {
         Monte o mata-mata da modalidade. Marcou o vencedor de um jogo? A turma já entra sozinha na chave seguinte.
       </p>
 
-      <DragScroll className="pb-3">
-        <div className="flex gap-2 w-max">
-          {modalities.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => switchModality(m.id)}
-              className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition ${
-                activeModality === m.id ? 'bg-brand text-white shadow-sm' : 'bg-white text-slate-500 border border-slate-200'
-              }`}
-            >
-              {m.name}
-            </button>
-          ))}
-        </div>
-      </DragScroll>
+      {/* Seletor de modalidade: painel com todas visíveis, sem rolagem
+          lateral — no computador a fileira antiga não rolava com o mouse. */}
+      <div className="mb-4">
+        <FilterBar
+          light
+          groups={[{
+            key: 'mod',
+            label: 'Escolha a modalidade',
+            value: activeModality,
+            onChange: switchModality,
+            options: modalities.map((m) => ({ value: m.id, label: m.name })),
+          }]}
+        />
+      </div>
 
       {!draft ? (
         <Loader />
@@ -295,6 +295,11 @@ function SlotEditor({ gameId, index, draft, classes, onChooseTeam, onLabelSlot, 
   // Dá pra marcar vencedor com turma escolhida ou com a vaga rotulada ("3º B")
   const canWin = !!team || slotIsSeeded(gameId, index, draft.games)
 
+  // texto escuro sobre o âmbar: branco sobre amarelo dá 1.67:1 e some
+  const winnerSkin = isWinner
+    ? 'bg-amber-400 text-brand-ink border-amber-500'
+    : 'bg-white text-slate-600 border-slate-200'
+
   return (
     <div className={`rounded-xl border p-2 ${isWinner ? 'border-amber-400 bg-amber-50' : isLoser ? 'border-slate-200 bg-slate-50 opacity-70' : 'border-slate-200'}`}>
       <div className="flex items-center gap-2">
@@ -312,11 +317,10 @@ function SlotEditor({ gameId, index, draft, classes, onChooseTeam, onLabelSlot, 
           onClick={() => onWinner(index)}
           disabled={!canWin}
           title={canWin ? 'Marcar como vencedor' : 'Escolha a turma dessa vaga primeiro'}
-          className={`shrink-0 px-3 py-2 rounded-lg text-xs font-bold border transition disabled:opacity-40 ${
-            isWinner ? 'bg-amber-400 text-white border-amber-400' : 'bg-white text-slate-500 border-slate-200'
-          }`}
+          className={`shrink-0 px-3 py-2 rounded-lg text-xs font-bold border transition disabled:opacity-40 ${winnerSkin}`}
         >
-          {isWinner ? '🏆 Venceu' : 'Venceu'}
+          {isWinner && <TrophyIcon className="w-3.5 h-3.5 inline -mt-0.5 mr-1" />}
+          Venceu
         </button>
       </div>
 

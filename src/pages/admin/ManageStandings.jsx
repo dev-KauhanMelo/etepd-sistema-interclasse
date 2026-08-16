@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
-import DragScroll from '../../components/common/DragScroll'
+import FilterBar from '../../components/common/FilterBar'
 import { useModalities } from '../../hooks/useModalities'
 import { useClasses } from '../../hooks/useClasses'
 import { useStandings } from '../../hooks/useStandings'
@@ -123,21 +123,20 @@ export default function ManageStandings() {
         Digite os números de cada turma. A colocação é calculada sozinha e aparece pros alunos na hora que você salvar.
       </p>
 
-      <DragScroll className="pb-3">
-        <div className="flex gap-2 w-max">
-          {modalities.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => switchModality(m.id)}
-              className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition ${
-                activeModality === m.id ? 'bg-brand text-white shadow-sm' : 'bg-white text-slate-500 border border-slate-200'
-              }`}
-            >
-              {m.name}
-            </button>
-          ))}
-        </div>
-      </DragScroll>
+      {/* Seletor de modalidade: painel com todas visíveis, sem rolagem
+          lateral — no computador a fileira antiga não rolava com o mouse. */}
+      <div className="mb-4">
+        <FilterBar
+          light
+          groups={[{
+            key: 'mod',
+            label: 'Escolha a modalidade',
+            value: activeModality,
+            onChange: switchModality,
+            options: modalities.map((m) => ({ value: m.id, label: m.name })),
+          }]}
+        />
+      </div>
 
       <Card className="mb-4">
         <p className="text-sm font-semibold mb-2">Formato desta modalidade</p>

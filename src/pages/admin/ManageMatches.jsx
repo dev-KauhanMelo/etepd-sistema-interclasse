@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
-import SearchBar from '../../components/common/SearchBar'
-import DragScroll from '../../components/common/DragScroll'
+import FilterBar from '../../components/common/FilterBar'
 import MatchForm from '../../components/admin/MatchForm'
 import MatchStatusBadge from '../../components/match/MatchStatusBadge'
 import { useMatches } from '../../hooks/useMatches'
@@ -51,39 +50,26 @@ export default function ManageMatches() {
         />
       )}
 
-      <SearchBar
-        value={query}
-        onChange={setQuery}
-        placeholder="Buscar turma, local ou modalidade…"
-        className="mb-3"
+      <FilterBar
         light
+        query={query}
+        onQueryChange={setQuery}
+        placeholder="Buscar turma, local ou modalidade…"
+        resultCount={filtered.length}
+        totalCount={matches.length}
+        groups={[
+          {
+            key: 'status', label: 'Momento', value: statusFilter, onChange: setStatusFilter,
+            options: STATUS_TABS.map((t) => ({ value: t.key, label: t.label })),
+          },
+          {
+            key: 'mod', label: 'Modalidade', value: modalityFilter, onChange: setModalityFilter,
+            options: [{ value: 'all', label: 'Todas' }, ...modalities.map((m) => ({ value: m.id, label: m.name }))],
+          },
+        ]}
       />
 
-      <DragScroll className="pb-2">
-        <div className="flex gap-2 w-max">
-          {STATUS_TABS.map((t) => (
-            <Chip key={t.key} active={statusFilter === t.key} onClick={() => setStatusFilter(t.key)}>
-              {t.label}
-            </Chip>
-          ))}
-        </div>
-      </DragScroll>
-
-      <DragScroll className="pb-3">
-        <div className="flex gap-2 w-max">
-          <Chip active={modalityFilter === 'all'} onClick={() => setModalityFilter('all')}>Todas</Chip>
-          {modalities.map((m) => (
-            <Chip key={m.id} active={modalityFilter === m.id} onClick={() => setModalityFilter(m.id)}>
-              {m.name}
-            </Chip>
-          ))}
-        </div>
-      </DragScroll>
-
-      <p className="text-xs text-slate-400 mb-2">
-        {filtered.length} {filtered.length === 1 ? 'jogo' : 'jogos'}
-        {isFiltering && ` de ${matches.length}`}
-      </p>
+      <div className="mb-3" />
 
       {filtered.length === 0 ? (
         <Card className="text-sm text-slate-500">
@@ -120,18 +106,5 @@ export default function ManageMatches() {
         ))
       )}
     </div>
-  )
-}
-
-function Chip({ active, children, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition ${
-        active ? 'bg-brand text-white shadow-sm' : 'bg-white text-slate-500 border border-slate-200'
-      }`}
-    >
-      {children}
-    </button>
   )
 }
