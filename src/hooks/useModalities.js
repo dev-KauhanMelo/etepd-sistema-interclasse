@@ -1,19 +1,12 @@
-import { useEffect, useState } from 'react'
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
+import { collection, orderBy, query } from 'firebase/firestore'
 import { db } from '../services/firebase'
+import { useLiveQuery } from './useLiveQuery'
 
 export function useModalities() {
-  const [modalities, setModalities] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const q = query(collection(db, 'modalities'), orderBy('name'))
-    const unsub = onSnapshot(q, (snap) => {
-      setModalities(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
-      setLoading(false)
-    }, (error) => { console.error('Erro ao carregar modalidades:', error); setLoading(false) })
-    return unsub
-  }, [])
-
-  return { modalities, loading }
+  const { docs, loading } = useLiveQuery(
+    'modalities',
+    () => query(collection(db, 'modalities'), orderBy('name')),
+    { permanent: true }
+  )
+  return { modalities: docs, loading }
 }

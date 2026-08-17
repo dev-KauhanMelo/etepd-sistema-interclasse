@@ -1,19 +1,14 @@
-import { useEffect, useState } from 'react'
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
+import { collection, orderBy, query } from 'firebase/firestore'
 import { db } from '../services/firebase'
+import { useLiveQuery } from './useLiveQuery'
 
+// Turmas mudam uma vez por evento, mas são lidas em toda tela — listener
+// permanente, compartilhado por todo mundo que pedir.
 export function useClasses() {
-  const [classes, setClasses] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const q = query(collection(db, 'classes'), orderBy('name'))
-    const unsub = onSnapshot(q, (snap) => {
-      setClasses(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
-      setLoading(false)
-    }, (error) => { console.error('Erro ao carregar turmas:', error); setLoading(false) })
-    return unsub
-  }, [])
-
-  return { classes, loading }
+  const { docs, loading } = useLiveQuery(
+    'classes',
+    () => query(collection(db, 'classes'), orderBy('name')),
+    { permanent: true }
+  )
+  return { classes: docs, loading }
 }

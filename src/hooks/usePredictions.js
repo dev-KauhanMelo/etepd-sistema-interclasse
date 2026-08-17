@@ -1,37 +1,20 @@
-import { useEffect, useState } from 'react'
-import { collection, onSnapshot, query, where } from 'firebase/firestore'
+import { collection, query, where } from 'firebase/firestore'
 import { db } from '../services/firebase'
+import { useLiveQuery } from './useLiveQuery'
 
-// Palpites de UM jogo específico (pra barra de torcida e o widget de palpite).
+// Palpites de UM jogo (barra de torcida e widget de palpite). Varia por tela,
+// então o listener fecha sozinho depois de ocioso.
 export function usePredictions(matchId) {
-  const [predictions, setPredictions] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (!matchId) { setPredictions([]); setLoading(false); return }
-    const q = query(collection(db, 'predictions'), where('matchId', '==', matchId))
-    const unsub = onSnapshot(q, (snap) => {
-      setPredictions(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
-      setLoading(false)
-    }, (error) => { console.error('Erro ao carregar palpites:', error); setLoading(false) })
-    return unsub
-  }, [matchId])
-
-  return { predictions, loading }
+  const { docs, loading } = useLiveQuery(
+    matchId ? `predictions:${matchId}` : null,
+    () => query(collection(db, 'predictions'), where('matchId', '==', matchId)),
+    { enabled: !!matchId }
+  )
+  return { predictions: docs, loading }
 }
 
-// TODOS os palpites (pro ranking do bolão e pra saber o que você já palpitou).
+// TODOS os palpites (ranking do bolão e o que você já palpitou).
 export function useAllPredictions() {
-  const [predictions, setPredictions] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'predictions'), (snap) => {
-      setPredictions(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
-      setLoading(false)
-    }, (error) => { console.error('Erro ao carregar palpites:', error); setLoading(false) })
-    return unsub
-  }, [])
-
-  return { predictions, loading }
+  const { docs, loading } = useLiveQuery('predictions', () => collection(db, 'predictions'))
+  return { predictions: docs, loading }
 }
