@@ -7,18 +7,19 @@ import { adjustScore, addMatchNote, updateMatch } from '../../services/matchesSe
 import { advanceWinnerInBracket } from '../../services/bracketsService'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
-import TeamCrest from '../../components/match/TeamCrest'
+import MatchStatusBadge from '../../components/match/MatchStatusBadge'
+import { MATCH_STATUS } from '../../utils/constants'
 import { scoringOf } from '../../utils/scoring'
-import { TrophyIcon } from '../../components/common/Icons'
 
-// Tela que o juiz usa durante o jogo. Feita para ser óbvia às 8h da manhã,
-// por alguém que nunca viu o sistema:
+const STATUSES = ['scheduled', 'live', 'paused', 'finished', 'suspended', 'cancelled']
+
+// Tela que o juiz usa durante o jogo: placar em cima, status embaixo.
 //
-//   1. COMEÇAR JOGO   2. (marcar, se a modalidade tiver placar)   3. ENCERRAR
-//
-// O que a modalidade pede muda a tela: Call of Duty e Wild Rift não mostram
-// placar nenhum, porque "3 a 0" não significa nada nesses jogos — só importa
-// quem passou. Ao encerrar, o vencedor entra sozinho na próxima chave.
+// O placar só aparece se a modalidade tiver placar — marcar "3 a 0" num Call of
+// Duty não quer dizer nada, e Free Fire e Cubo Mágico nem são turma contra turma
+// (ver utils/scoring.js). Ao marcar Encerrado, o vencedor entra sozinho na
+// próxima chave: quando o placar decide, é automático; quando não decide
+// (empate, ou modalidade sem placar), a tela pergunta quem passou.
 export default function UpdateScore() {
   const { id } = useParams()
   const { match, loading } = useMatch(id)
@@ -26,7 +27,6 @@ export default function UpdateScore() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [note, setNote] = useState('')
-  const [encerrando, setEncerrando] = useState(false)
   const [aviso, setAviso] = useState(null)
 
   if (loading || !match) return <p className="text-sm text-slate-400">Carregando...</p>
@@ -35,120 +35,125 @@ export default function UpdateScore() {
   const scoring = scoringOf(modName)
   const mostraPlacar = scoring.tipo === 'placar' || scoring.tipo === 'sets'
 
-  const live = match.status === 'live'
-  const finished = match.status === 'finished'
+  // Encerrado sem vencedor definido: precisa perguntar quem passou
+  const perguntaVencedor = match.status === 'finished' && !match.winnerSide
 
-  const comecar = () => updateMatch(match.id, { status: 'live' }, user?.uid)
-
-  // Encerra e, se houver chaveamento, já passa o vencedor para a próxima fase
-  const encerrar = async (side) => {
-    const vencedor = side === 'A' ? match.teamA?.name : match.teamB?.name
-    if (!confirm(`Encerrar o jogo com ${vencedor} como vencedor?`)) return
-    setEncerrando(true)
+  // Marca o vencedor e empurra pro chaveamento
+  const definirVencedor = async (side) => {
+    const nome = side === 'A' ? match.teamA?.name : match.teamB?.name
     setAviso(null)
     try {
       await updateMatch(match.id, { status: 'finished', winnerSide: side }, user?.uid)
       const r = await advanceWinnerInBracket(match.modalityId, match, side)
       setAviso(
         r.ok
-          ? { tipo: 'ok', texto: `${vencedor} venceu. Já avançou no chaveamento.` }
-          : { tipo: 'info', texto: `${vencedor} venceu. Esta modalidade não tem chaveamento montado — nada mais a fazer.` }
+          ? { erro: false, texto: `${nome} venceu — já avançou no chaveamento.` }
+          : { erro: false, texto: `${nome} venceu. Esta modalidade não tem chaveamento montado.` }
       )
     } catch (e) {
       console.error(e)
-      setAviso({ tipo: 'erro', texto: 'Não deu pra salvar. Confere a internet e tenta de novo.' })
-    } finally {
-      setEncerrando(false)
+      setAviso({ erro: true, texto: 'Não deu pra salvar. Confere a internet e tenta de novo.' })
     }
   }
 
-  const reabrir = () => updateMatch(match.id, { status: 'live', winnerSide: null }, user?.uid)
+  const mudarStatus = async (s) => {
+    // Ao encerrar com placar decidido, o vencedor sai do próprio placar
+    if (s === 'finished' && mostraPlacar && (match.scoreA ?? 0) !== (match.scoreB ?? 0)) {
+      return definirVencedor((match.scoreA ?? 0) > (match.scoreB ?? 0) ? 'A' : 'B')
+    }
+    setAviso(null)
+    await updateMatch(match.id, { status: s }, user?.uid)
+  }
 
   return (
     <div className="pb-8">
-      <button onClick={() => navigate('/admin/jogos')} className="text-sm text-slate-500 mb-3">← Voltar para os jogos</button>
+      <button onClick={() => navigate('/admin/jogos')} className="text-sm text-slate-400 mb-3">← Voltar</button>
 
-      {/* Quem joga, onde e como se marca */}
       <Card className="mb-4">
-        <p className="text-center text-xs font-semibold text-slate-400 uppercase tracking-wide">
+        <p className="text-center text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">
           {modName} · {match.location}
         </p>
-        <div className="flex items-center justify-around mt-4">
-          <TeamFace team={match.teamA} winner={match.winnerSide === 'A'} />
-          <span className="text-slate-300 font-bold text-xl">×</span>
-          <TeamFace team={match.teamB} winner={match.winnerSide === 'B'} />
-        </div>
-        {!mostraPlacar && (
-          <p className="text-center text-xs text-slate-400 mt-4">
-            {scoring.tipo === 'nenhum'
-              ? 'Esta modalidade não é decidida em confronto direto — lance os resultados na aba Classificação.'
-              : 'Nesta modalidade não se marca placar: no fim, escolha quem passou.'}
-          </p>
+        {mostraPlacar ? (
+          <>
+            <div className="flex items-center justify-around">
+              <ScoreControl team={match.teamA} score={match.scoreA} onAdjust={(d) => adjustScore(match, 'A', d, user?.uid)} />
+              <span className="text-slate-300 score-number text-2xl">×</span>
+              <ScoreControl team={match.teamB} score={match.scoreB} onAdjust={(d) => adjustScore(match, 'B', d, user?.uid)} />
+            </div>
+            {scoring.tipo === 'sets' && (
+              <p className="text-center text-xs text-slate-400 mt-3">
+                Marque as {scoring.unidade} que cada lado venceu.
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <p className="text-center text-lg font-bold text-slate-700">
+              {match.teamA?.name} × {match.teamB?.name}
+            </p>
+            <p className="text-center text-xs text-slate-400 mt-2">
+              {scoring.tipo === 'nenhum'
+                ? 'Esta modalidade não é decidida em confronto direto — lance os resultados na aba Classificação.'
+                : 'Nesta modalidade não se marca placar: ao encerrar, escolha quem passou.'}
+            </p>
+          </>
         )}
       </Card>
 
-      {/* PASSO 1 */}
-      {!live && !finished && (
-        <button
-          onClick={comecar}
-          className="w-full rounded-2xl bg-brand text-white py-5 text-lg font-bold shadow-card active:scale-[0.98] transition mb-4"
-        >
-          COMEÇAR JOGO
-        </button>
-      )}
+      <Card className="mb-4">
+        <p className="text-sm font-semibold mb-2">Status da partida</p>
+        <div className="flex flex-wrap gap-2">
+          {STATUSES.map((s) => (
+            <button
+              key={s}
+              onClick={() => mudarStatus(s)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold ${match.status === s ? 'ring-2 ring-brand bg-brand/10' : 'bg-slate-100'}`}
+            >
+              {MATCH_STATUS[s].label}
+            </button>
+          ))}
+        </div>
+        <div className="mt-3"><MatchStatusBadge status={match.status} /></div>
+      </Card>
 
-      {/* PASSO 2 — só quem tem placar */}
-      {live && mostraPlacar && (
-        <Card className="mb-4">
-          <p className="text-sm font-semibold mb-1">
-            {scoring.tipo === 'sets' ? `${scoring.unidade} ganhas` : `Marcar ${scoring.unidade}`}
-          </p>
-          <p className="text-xs text-slate-400 mb-3">Toque no + de quem marcou.</p>
-          <div className="flex items-center justify-around">
-            <ScoreControl team={match.teamA} score={match.scoreA} onAdjust={(d) => adjustScore(match, 'A', d, user?.uid)} />
-            <span className="text-slate-300 font-bold text-2xl">×</span>
-            <ScoreControl team={match.teamB} score={match.scoreB} onAdjust={(d) => adjustScore(match, 'B', d, user?.uid)} />
-          </div>
-        </Card>
-      )}
-
-      {/* PASSO 3 */}
-      {live && (
-        <Card className="mb-4">
-          <p className="text-sm font-semibold mb-1">Encerrar o jogo</p>
-          <p className="text-xs text-slate-400 mb-3">Toque na turma que <strong>venceu</strong>. O vencedor avança sozinho no chaveamento.</p>
+      {/* Só aparece quando o placar não resolve: empate ou modalidade sem placar */}
+      {perguntaVencedor && (
+        <Card className="mb-4 border-2 border-brand/30">
+          <p className="text-sm font-semibold mb-1">Quem venceu?</p>
+          <p className="text-xs text-slate-400 mb-3">O vencedor avança sozinho no chaveamento.</p>
           <div className="grid grid-cols-2 gap-3">
-            <WinnerButton team={match.teamA} disabled={encerrando} onClick={() => encerrar('A')} />
-            <WinnerButton team={match.teamB} disabled={encerrando} onClick={() => encerrar('B')} />
+            <WinnerButton team={match.teamA} onClick={() => definirVencedor('A')} />
+            <WinnerButton team={match.teamB} onClick={() => definirVencedor('B')} />
           </div>
         </Card>
       )}
 
-      {finished && (
+      {match.status === 'finished' && match.winnerSide && (
         <Card className="mb-4 border-2 border-emerald-500/40 bg-emerald-50/60">
           <p className="text-sm font-bold text-emerald-800">
-            Jogo encerrado{match.winnerSide ? ` — venceu ${match.winnerSide === 'A' ? match.teamA?.name : match.teamB?.name}` : ''}
+            Venceu {match.winnerSide === 'A' ? match.teamA?.name : match.teamB?.name}
           </p>
-          <button onClick={reabrir} className="text-xs text-slate-500 underline mt-2">
-            Marquei errado, reabrir o jogo
+          <button
+            onClick={() => updateMatch(match.id, { winnerSide: null }, user?.uid)}
+            className="text-xs text-slate-500 underline mt-2"
+          >
+            Marquei errado, trocar o vencedor
           </button>
         </Card>
       )}
 
       {aviso && (
-        <Card className={`mb-4 text-sm ${aviso.tipo === 'erro' ? 'text-red-600' : 'text-slate-600'}`}>
+        <Card className={`mb-4 text-sm ${aviso.erro ? 'text-red-600' : 'text-slate-600'}`}>
           {aviso.texto}
         </Card>
       )}
 
-      {/* Aviso da partida — opcional, fica por último de propósito */}
       <Card>
-        <p className="text-sm font-semibold mb-1">Aviso rápido (opcional)</p>
-        <p className="text-xs text-slate-400 mb-2">Aparece na tela do jogo pros alunos.</p>
+        <p className="text-sm font-semibold mb-2">Aviso rápido da partida</p>
         <div className="flex gap-2">
           <input
             value={note} onChange={(e) => setNote(e.target.value)}
-            placeholder="Ex.: atraso de 10 minutos"
+            placeholder="Ex.: Gol aos 12min"
             className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm"
           />
           <Button onClick={async () => { if (note) { await addMatchNote(match, note, user?.uid); setNote('') } }}>
@@ -163,24 +168,11 @@ export default function UpdateScore() {
   )
 }
 
-function TeamFace({ team, winner }) {
-  return (
-    <div className="text-center">
-      <TeamCrest team={team} size="lg" />
-      <p className={`text-sm font-bold mt-2 inline-flex items-center gap-1 ${winner ? 'text-emerald-700' : 'text-slate-700'}`}>
-        {team?.name}
-        {winner && <TrophyIcon className="w-4 h-4" />}
-      </p>
-    </div>
-  )
-}
-
-function WinnerButton({ team, onClick, disabled }) {
+function WinnerButton({ team, onClick }) {
   return (
     <button
       onClick={onClick}
-      disabled={disabled}
-      className="rounded-2xl border-2 py-4 px-2 font-bold text-sm active:scale-95 transition disabled:opacity-50"
+      className="rounded-2xl border-2 py-4 px-2 font-bold text-sm active:scale-95 transition"
       style={{ borderColor: team?.color || '#cbd5e1', color: '#0E141D' }}
     >
       Venceu<br />
@@ -193,7 +185,7 @@ function ScoreControl({ team, score, onAdjust }) {
   return (
     <div className="text-center">
       <p className="text-xs font-medium text-slate-500 mb-2">{team?.name}</p>
-      <p className="text-5xl font-black mb-3" style={{ color: team?.color }}>{score ?? 0}</p>
+      <p className="score-number text-5xl mb-3" style={{ color: team?.color }}>{score ?? 0}</p>
       <div className="flex gap-2 justify-center">
         <button onClick={() => onAdjust(-1)} className="w-14 h-14 rounded-full bg-slate-100 text-xl font-bold active:scale-90 transition">−</button>
         <button onClick={() => onAdjust(1)} className="w-16 h-16 rounded-full bg-brand text-white text-2xl font-bold shadow-md active:scale-90 transition">+</button>

@@ -119,6 +119,14 @@ export default function Home() {
               </Link>
             ))}
           </div>
+          {/* Saída explícita pros jogos: sem ela, o pessoal ia procurar a lista
+              completa no Bolão, que é a única outra tela que mostra confrontos. */}
+          <Link
+            to="/horarios"
+            className="block mx-4 mt-2 cut-corner-sm border border-white/[0.12] py-2.5 text-center font-bracket font-bold text-xs tracking-[0.14em] uppercase text-gold hover:border-gold/40 transition"
+          >
+            Ver todos os jogos →
+          </Link>
         </>
       )}
 

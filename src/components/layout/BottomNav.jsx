@@ -5,7 +5,9 @@ const items = [
   { to: '/', label: 'Início', Icon: HomeIcon },
   { to: '/placar', label: 'Placar', Icon: BarsIcon },
   { to: '/bolao', label: 'Bolão', Icon: NodesIcon },
-  { to: '/horarios', label: 'Tabela', Icon: ClockIcon },
+  // "Tabela" fazia o pessoal procurar os jogos do dia no Bolão — em escola,
+  // "tabela" é a classificação, não a lista de jogos.
+  { to: '/horarios', label: 'Jogos', Icon: ClockIcon },
   { to: '/ranking', label: 'Ranking', Icon: TrophyIcon },
 ]
 

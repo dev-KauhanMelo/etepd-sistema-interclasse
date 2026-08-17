@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import Header from '../../components/layout/Header'
 import EmptyState from '../../components/common/EmptyState'
 import Loader from '../../components/common/Loader'
@@ -24,18 +23,24 @@ export default function Schedule() {
   const { matches, loading } = useMatches()
   const { modalities } = useModalities()
   const [modalityFilter, setModalityFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState(null) // null = ainda não escolhido pela pessoa
   const [query, setQuery] = useState('')
-  const [tab, setTab] = useState('grade')
+  // Abre nos jogos, não na grade: quem toca aqui quer saber que jogo tem agora.
+  const [tab, setTab] = useState('jogos')
   const [venueFilter, setVenueFilter] = useState('all')
   const [showAll, setShowAll] = useState(false)
 
   if (loading) return <Loader />
 
+  // Enquanto a pessoa não escolhe, o filtro se ajusta ao dia: durante o evento
+  // mostra os jogos de hoje; fora dele, os que ainda vão acontecer.
+  const temHoje = matches.some((m) => isToday(m.scheduledAt))
+  const status = statusFilter ?? (temHoje ? 'today' : 'scheduled')
+
   // "Hoje" é filtro de data, os outros são de status — por isso separado.
-  const byStatus = statusFilter === 'today'
+  const byStatus = status === 'today'
     ? matches.filter((m) => isToday(m.scheduledAt))
-    : filterMatches(matches, { status: statusFilter })
+    : filterMatches(matches, { status })
 
   const filtered = filterMatches(byStatus, { query, modalityId: modalityFilter, modalities })
     .filter((m) => venueFilter === 'all' || m.venue === venueFilter)
@@ -43,15 +48,14 @@ export default function Schedule() {
   // Lista longa: mostra os primeiros dias e guarda o resto atrás do "ver todos"
   const visibleGroups = showAll ? groups : groups.slice(0, 2)
   const hiddenCount = groups.slice(visibleGroups.length).reduce((n, g) => n + g.items.length, 0)
-  const isFiltering = query || modalityFilter !== 'all' || statusFilter !== 'all'
 
   return (
     <div>
       <Header title="CRONOGRAMA" subtitle="5 dias · ETE PD + UNIBRA · 08h—16h40" />
 
       <div className="mx-4 mt-1 cut-corner-sm bg-arena-panel p-1 flex gap-1">
+        <TabButton active={tab === 'jogos'} onClick={() => setTab('jogos')}>Jogos</TabButton>
         <TabButton active={tab === 'grade'} onClick={() => setTab('grade')}>Programação</TabButton>
-        <TabButton active={tab === 'jogos'} onClick={() => setTab('jogos')}>Jogos marcados</TabButton>
       </div>
 
       {tab === 'grade' ? (
@@ -69,7 +73,7 @@ export default function Schedule() {
               totalCount={matches.length}
               groups={[
                 {
-                  key: 'status', label: 'Momento', value: statusFilter, onChange: (v) => { setStatusFilter(v); setShowAll(false) },
+                  key: 'status', label: 'Momento', value: status, onChange: (v) => { setStatusFilter(v); setShowAll(false) },
                   options: STATUS_TABS.map((t) => ({ value: t.key, label: t.label })),
                 },
                 {
@@ -88,8 +92,16 @@ export default function Schedule() {
             {filtered.length === 0 ? (
               <EmptyState
                 icon={<ClockIcon className="w-10 h-10" />}
-                title="Nenhum jogo encontrado"
-                subtitle={query ? `Nada bate com "${query}"` : 'Tente outro filtro'}
+                title={status === 'today' ? 'Nenhum jogo hoje' : 'Nenhum jogo encontrado'}
+                subtitle={query ? `Nada bate com "${query}"` : 'Toque no funil e escolha “Todos” pra ver o cronograma inteiro'}
+                action={
+                  <button
+                    onClick={() => { setStatusFilter('all'); setQuery(''); setModalityFilter('all'); setVenueFilter('all') }}
+                    className="cut-corner-sm bg-gold px-4 py-2 font-bracket font-bold text-xs tracking-[0.1em] uppercase text-brand-ink"
+                  >
+                    Ver todos os jogos
+                  </button>
+                }
               />
             ) : (
               visibleGroups.map((g) => (
@@ -127,15 +139,3 @@ function TabButton({ active, children, onClick }) {
   )
 }
 
-function Chip({ active, children, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`shrink-0 px-3.5 py-[5px] font-bracket font-bold text-xs tracking-[0.08em] uppercase transition ${
-        active ? 'cut-corner-sm bg-gold text-brand-ink' : 'border border-white/[0.12] text-arena-muted hover:text-white'
-      }`}
-    >
-      {children}
-    </button>
-  )
-}
