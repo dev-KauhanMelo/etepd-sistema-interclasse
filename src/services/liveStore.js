@@ -20,6 +20,25 @@ const IDLE_MS = 5 * 60 * 1000
 
 const stores = new Map()
 
+// Cota de leitura estourada (`resource-exhausted`): o Firestore recusa tudo
+// até a virada do dia. Sem isso a tela ficava vazia sem explicação, e quem
+// abria achava que o site tinha quebrado. Quem quiser saber, escuta aqui.
+let semCota = false
+const ouvintesDeCota = new Set()
+
+export const cotaEstourada = () => semCota
+
+export function onCotaEstourada(cb) {
+  ouvintesDeCota.add(cb)
+  return () => ouvintesDeCota.delete(cb)
+}
+
+function marcarSemCota() {
+  if (semCota) return
+  semCota = true
+  ouvintesDeCota.forEach((cb) => cb(true))
+}
+
 function getStore(key, makeQuery, permanent) {
   let s = stores.get(key)
   if (!s) {
@@ -57,6 +76,7 @@ export function subscribeQuery(key, makeQuery, cb, { permanent = false } = {}) {
         // Cota estourada, índice faltando ou regra negando caem aqui. Melhor
         // mostrar a tela vazia do que deixar o Loader girando pra sempre.
         console.error(`Erro ao carregar ${key}:`, error)
+        if (error?.code === 'resource-exhausted') marcarSemCota()
         s.loaded = true
         emit(s)
       }

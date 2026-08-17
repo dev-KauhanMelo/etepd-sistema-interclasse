@@ -10,6 +10,7 @@ import { useMatches } from '../../hooks/useMatches'
 import { useModalities } from '../../hooks/useModalities'
 import { isToday } from '../../utils/formatDate'
 import { filterMatches, groupByDay } from '../../utils/matchFilters'
+import { cotaEstourada } from '../../services/liveStore'
 import ProgramGrid from '../../components/schedule/ProgramGrid'
 
 const STATUS_TABS = [
@@ -31,6 +32,11 @@ export default function Schedule() {
   const [showAll, setShowAll] = useState(false)
 
   if (loading) return <Loader />
+
+  // Sem banco (cota do dia esgotada) não há confronto pra listar, mas a
+  // Programação vem do código e continua de pé — é ela que a pessoa precisa.
+  const semDados = matches.length === 0 && cotaEstourada()
+  const abaAtiva = semDados ? 'grade' : tab
 
   // Enquanto a pessoa não escolhe, o filtro se ajusta ao dia: durante o evento
   // mostra os jogos de hoje; fora dele, os que ainda vão acontecer.
@@ -54,11 +60,11 @@ export default function Schedule() {
       <Header title="CRONOGRAMA" subtitle="5 dias · ETE PD + UNIBRA · 08h—16h40" />
 
       <div className="mx-4 mt-1 cut-corner-sm bg-arena-panel p-1 flex gap-1">
-        <TabButton active={tab === 'jogos'} onClick={() => setTab('jogos')}>Jogos</TabButton>
-        <TabButton active={tab === 'grade'} onClick={() => setTab('grade')}>Programação</TabButton>
+        <TabButton active={abaAtiva === 'jogos'} onClick={() => setTab('jogos')}>Jogos</TabButton>
+        <TabButton active={abaAtiva === 'grade'} onClick={() => setTab('grade')}>Programação</TabButton>
       </div>
 
-      {tab === 'grade' ? (
+      {abaAtiva === 'grade' ? (
         <div className="px-4 py-4">
           <ProgramGrid />
         </div>
