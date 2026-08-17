@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import Loader from '../../components/common/Loader'
 import Credits from '../../components/layout/Credits'
 import TeamCrest from '../../components/match/TeamCrest'
-import { useMatches } from '../../hooks/useMatches'
+import { useLiveMatches, useNextMatches } from '../../hooks/useLiveMatches'
 import { useModalities } from '../../hooks/useModalities'
 import { useAnnouncements } from '../../hooks/useAnnouncements'
 import { matchTime, isTimeTBD } from '../../utils/formatDate'
@@ -12,18 +12,16 @@ import { CRONOGRAMA, VENUES, dayLabel, isCurrentDay, isPastDay, EVENT_HOURS } fr
 // o jogo ao vivo como herói, próximos jogos e o bolão. Sem hero de boas-vindas
 // e sem grid de atalhos — a bottom-nav já leva pra tudo.
 export default function Home() {
-  const { matches, loading } = useMatches()
+  // A Home pede duas consultas curtas em vez da lista inteira: quem só abre o
+  // site pra ver o que está rolando não paga pelos 72 jogos do evento.
+  const { matches: live, loading } = useLiveMatches()
+  const { matches: upcoming } = useNextMatches(3)
   const { modalities } = useModalities()
   const { announcements } = useAnnouncements()
 
   if (loading) return <Loader />
 
   const modName = (id) => modalities.find((m) => m.id === id)?.name || ''
-  const live = matches.filter((m) => m.status === 'live')
-  const upcoming = matches
-    .filter((m) => m.status === 'scheduled')
-    .sort((a, b) => (a.scheduledAt?.seconds || 0) - (b.scheduledAt?.seconds || 0))
-    .slice(0, 3)
 
   // Que dia do evento é hoje (ou o próximo, se for véspera/fim de semana)
   const today = CRONOGRAMA.find((d) => isCurrentDay(d.date))

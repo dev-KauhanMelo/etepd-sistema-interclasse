@@ -1,17 +1,17 @@
 import { Link } from 'react-router-dom'
 import { MegaphoneIcon } from '../common/Icons'
-import { useMatches } from '../../hooks/useMatches'
+import { useLiveMatches } from '../../hooks/useLiveMatches'
 import { useModalities } from '../../hooks/useModalities'
 import { useAnnouncements } from '../../hooks/useAnnouncements'
 
 // Barra fixa do topo (Modo Arena): logo branca + wordmark inclinada, megafone
 // de avisos e — quando tem jogo rolando — o ticker dourado correndo embaixo.
 export default function TopBar() {
-  const { matches } = useMatches()
+  // Só os jogos ao vivo: o TopBar aparece em toda página, e carregar a lista
+  // inteira aqui era o custo mais alto do site.
+  const { matches: live } = useLiveMatches()
   const { modalities } = useModalities()
   const { announcements } = useAnnouncements()
-
-  const live = matches.filter((m) => m.status === 'live')
   const modName = (id) => modalities.find((m) => m.id === id)?.name || ''
 
   // Uma frase por jogo ao vivo; o marquee repete o conjunto.

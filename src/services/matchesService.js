@@ -27,12 +27,6 @@ export async function deleteMatch(id) {
   return deleteDoc(doc(db, 'matches', id))
 }
 
-export async function adjustScore(match, side, delta, uid) {
-  const field = side === 'A' ? 'scoreA' : 'scoreB'
-  const newValue = Math.max(0, (match[field] || 0) + delta)
-  return updateMatch(match.id, { [field]: newValue }, uid)
-}
-
 export async function addMatchNote(match, note, uid) {
   const notes = [...(match.matchNotes || []), note]
   return updateMatch(match.id, { matchNotes: notes }, uid)

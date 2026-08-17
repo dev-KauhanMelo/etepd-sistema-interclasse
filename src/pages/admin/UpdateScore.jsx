@@ -3,13 +3,14 @@ import { useState } from 'react'
 import { useMatch } from '../../hooks/useMatch'
 import { useModalities } from '../../hooks/useModalities'
 import { useAuth } from '../../context/AuthContext'
-import { adjustScore, addMatchNote, updateMatch } from '../../services/matchesService'
+import { addMatchNote, updateMatch } from '../../services/matchesService'
 import { advanceWinnerInBracket } from '../../services/bracketsService'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import MatchStatusBadge from '../../components/match/MatchStatusBadge'
 import { MATCH_STATUS } from '../../utils/constants'
 import { scoringOf } from '../../utils/scoring'
+import { usePendingScore } from '../../hooks/usePendingScore'
 
 const STATUSES = ['scheduled', 'live', 'paused', 'finished', 'suspended', 'cancelled']
 
@@ -28,6 +29,12 @@ export default function UpdateScore() {
   const navigate = useNavigate()
   const [note, setNote] = useState('')
   const [aviso, setAviso] = useState(null)
+
+  // Toques no +/- viram UMA gravação (ver hooks/usePendingScore)
+  const { placar, ajustar, salvando, gravarAgora } = usePendingScore(
+    match,
+    (campos) => updateMatch(match.id, campos, user?.uid)
+  )
 
   if (loading || !match) return <p className="text-sm text-slate-400">Carregando...</p>
 
@@ -57,9 +64,11 @@ export default function UpdateScore() {
   }
 
   const mudarStatus = async (s) => {
-    // Ao encerrar com placar decidido, o vencedor sai do próprio placar
-    if (s === 'finished' && mostraPlacar && (match.scoreA ?? 0) !== (match.scoreB ?? 0)) {
-      return definirVencedor((match.scoreA ?? 0) > (match.scoreB ?? 0) ? 'A' : 'B')
+    // Grava o que estava pendente antes de olhar o placar — senão o vencedor
+    // sairia de um número desatualizado.
+    gravarAgora()
+    if (s === 'finished' && mostraPlacar && placar('A') !== placar('B')) {
+      return definirVencedor(placar('A') > placar('B') ? 'A' : 'B')
     }
     setAviso(null)
     await updateMatch(match.id, { status: s }, user?.uid)
@@ -76,10 +85,13 @@ export default function UpdateScore() {
         {mostraPlacar ? (
           <>
             <div className="flex items-center justify-around">
-              <ScoreControl team={match.teamA} score={match.scoreA} onAdjust={(d) => adjustScore(match, 'A', d, user?.uid)} />
+              <ScoreControl team={match.teamA} score={placar('A')} onAdjust={(d) => ajustar('A', d)} />
               <span className="text-slate-300 score-number text-2xl">×</span>
-              <ScoreControl team={match.teamB} score={match.scoreB} onAdjust={(d) => adjustScore(match, 'B', d, user?.uid)} />
+              <ScoreControl team={match.teamB} score={placar('B')} onAdjust={(d) => ajustar('B', d)} />
             </div>
+            <p className="text-center text-[11px] text-slate-400 mt-2 h-4">
+              {salvando ? 'salvando…' : ''}
+            </p>
             {scoring.tipo === 'sets' && (
               <p className="text-center text-xs text-slate-400 mt-3">
                 Marque as {scoring.unidade} que cada lado venceu.
