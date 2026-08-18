@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { serverTimestamp } from 'firebase/firestore'
 import { useMatch } from '../../hooks/useMatch'
 import { useModalities } from '../../hooks/useModalities'
 import { useAuth } from '../../context/AuthContext'
@@ -48,7 +49,11 @@ export default function UpdateScore() {
 
   const mudar = (novo) => {
     setAviso(null)
-    return updateMatch(match.id, { status: novo }, user?.uid)
+    // Começar o jogo carimba a hora: é ela que substitui o "a definir" nas
+    // telas dos alunos. Só na PRIMEIRA vez — retomar depois de uma pausa não
+    // reescreve a hora em que a partida começou de verdade.
+    const extra = novo === 'live' && !match.startedAt ? { startedAt: serverTimestamp() } : {}
+    return updateMatch(match.id, { status: novo, ...extra }, user?.uid)
   }
 
   const confirmarE = (pergunta, novo) => () => {

@@ -20,17 +20,24 @@ export function formatTime(timestamp) {
 // a Comissão divulga a ordem das modalidades, não o horário de cada partida.
 // Nesses casos o jogo carrega `timeTBD: true` e a tela diz "a definir" em vez
 // de mostrar um horário inventado — o aluno se organiza pelo dia e pelo local.
-export const isTimeTBD = (match) => !!match?.timeTBD
+// Jogo sem hora marcada deixa de ser "a definir" no instante em que a bola
+// rola: quem aperta COMEÇAR JOGO grava a hora do toque em `startedAt`, e ela
+// passa a ser a hora do jogo. É mais honesto que um horário combinado que
+// ninguém cumpriu, e resolve sozinho — a comissão não digita nada.
+export const isTimeTBD = (match) => !!match?.timeTBD && !match?.startedAt
 
 export function matchTime(match) {
+  if (match?.startedAt) return formatTime(match.startedAt)
   if (isTimeTBD(match)) return 'a def.'
   return formatTime(match?.scheduledAt)
 }
 
 export function matchDateTime(match) {
-  if (!match?.scheduledAt) return '-'
-  const date = match.scheduledAt.toDate ? match.scheduledAt.toDate() : new Date(match.scheduledAt)
+  const base = match?.startedAt || match?.scheduledAt
+  if (!base) return '-'
+  const date = base.toDate ? base.toDate() : new Date(base)
   const dia = date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })
+  if (match?.startedAt) return `${dia} · começou ${formatTime(match.startedAt)}`
   return isTimeTBD(match) ? `${dia} · horário a definir` : formatDateTime(match.scheduledAt)
 }
 

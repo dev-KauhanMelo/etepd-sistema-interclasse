@@ -19,13 +19,16 @@ export default function FilterBar({
 }) {
   const [open, setOpen] = useState(false)
 
-  const activeCount = groups.filter((g) => g.value && g.value !== 'all').length
+  // `neutral`: o valor que significa "sem filtro" naquele grupo. Quase sempre
+  // 'all', mas o Ranking usa 'geral' — sem isso o funil marcava um filtro
+  // ativo já na abertura, e o contador de filtros virava ruído.
+  const activeCount = groups.filter((g) => g.value && g.value !== (g.neutral || 'all')).length
   const filtering = activeCount > 0 || !!query
   const searchable = typeof onQueryChange === 'function'
 
   const clearAll = () => {
     if (searchable) onQueryChange('')
-    groups.forEach((g) => g.onChange('all'))
+    groups.forEach((g) => g.onChange(g.neutral || 'all'))
   }
 
   const skin = light

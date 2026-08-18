@@ -3,14 +3,25 @@
 // A campanha de uma turma no JIPD não é "quantos jogos ganhou" — é em quantas
 // modalidades ela subiu no pódio. Vitória em fase de grupos não vale ponto
 // geral; o que vale é terminar a modalidade em 1º, 2º ou 3º.
-//
-// Pontuação por colocação vem do edital (§10). Se a comissão mudar os valores,
-// é aqui que se mexe — o resto do sistema lê daqui.
-export const PONTOS_POR_COLOCACAO = {
-  gold: 350,
-  silver: 250,
-  bronze: 150,
+
+// Edital §10: esporte vale mais que e-sport e jogo de mesa.
+export const PONTOS = {
+  esporte: { gold: 350, silver: 250, bronze: 150 },
+  mesa: { gold: 300, silver: 200, bronze: 100 },
 }
+
+// Quais modalidades são "esporte" (§10.1). O resto cai em e-sports e jogos de
+// mesa (§10.2). Chave: nome em minúsculas, sem acento.
+const ESPORTES = new Set([
+  'futsal masculino', 'futsal', 'handebol', 'basquete', 'voleibol',
+  'queimado', 'barra bandeira', 'quadrado volei',
+])
+
+const chave = (nome) =>
+  String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+
+export const tipoDaModalidade = (nome) => (ESPORTES.has(chave(nome)) ? 'esporte' : 'mesa')
+export const pontosDe = (nome) => PONTOS[tipoDaModalidade(nome)]
 
 export const MEDALHAS = [
   { key: 'gold', label: 'Ouro', short: 'O', place: 1, color: '#F5C518' },
@@ -18,45 +29,53 @@ export const MEDALHAS = [
   { key: 'bronze', label: 'Bronze', short: 'B', place: 3, color: '#CD7F32' },
 ]
 
-// Monta o ranking geral a partir dos pódios lançados e das punições aplicadas.
-//
-// `podiums`: [{ id: modalityId, gold, silver, bronze }] — cada campo é um classId
-// `penalties`: [{ classId, points }] — pontos a DESCONTAR (valor positivo desconta)
-//
-// Turma pode terminar com saldo negativo: uma punição grande sem medalha
-// nenhuma deixa a turma abaixo de zero, e isso é resultado válido, não erro.
-export function buildMedalRanking(podiums = [], penalties = [], classes = []) {
+// Categorias: a mesma modalidade pode ter duas disputas com pódios diferentes
+// (Basquete masculino e feminino terminaram com colocações distintas).
+export const CATEGORIAS = [
+  { key: 'unico', label: 'Único' },
+  { key: 'masc', label: 'Masculino' },
+  { key: 'fem', label: 'Feminino' },
+]
+
+export const podiumId = (modalityId, categoria = 'unico') => `${modalityId}__${categoria}`
+
+// Times combinados do feminino (1º ano unido, 2ºB+2ºC…) não são uma turma, são
+// várias. Por isso cada colocação guarda uma LISTA de turmas, e todas as turmas
+// da lista recebem os pontos daquela colocação — quem subiu no pódio foi cada
+// uma delas.
+export function buildMedalRanking(podiums = [], penalties = [], classes = [], modalities = []) {
   const linhas = new Map()
 
   const linha = (classId) => {
     if (!classId) return null
     if (!linhas.has(classId)) {
       const cls = classes.find((c) => c.id === classId)
+      if (!cls) return null
       linhas.set(classId, {
-        id: classId,
-        classId,
-        className: cls?.name || classId,
-        color: cls?.color,
-        logoUrl: cls?.logoUrl,
+        id: classId, classId,
+        className: cls.name, color: cls.color, logoUrl: cls.logoUrl,
         gold: 0, silver: 0, bronze: 0,
-        earned: 0,      // pontos ganhos no pódio
-        penalty: 0,     // pontos descontados
-        points: 0,      // saldo final
+        earned: 0, penalty: 0, points: 0,
       })
     }
     return linhas.get(classId)
   }
 
-  // Toda turma cadastrada aparece, mesmo zerada — sumir da tabela por não ter
-  // pontuado ainda faz parecer que a turma não está no evento.
+  // Toda turma aparece, mesmo zerada — sumir da tabela por ainda não ter
+  // pontuado faz parecer que a turma não está no evento.
   classes.forEach((c) => linha(c.id))
 
   for (const p of podiums) {
+    const mod = modalities.find((m) => m.id === p.modalityId)
+    const valores = pontosDe(mod?.name)
     for (const { key } of MEDALHAS) {
-      const l = linha(p[key])
-      if (!l) continue
-      l[key] += 1
-      l.earned += PONTOS_POR_COLOCACAO[key]
+      const ids = Array.isArray(p[key]) ? p[key] : p[key] ? [p[key]] : []
+      for (const id of ids) {
+        const l = linha(id)
+        if (!l) continue
+        l[key] += 1
+        l.earned += valores[key]
+      }
     }
   }
 

@@ -12,7 +12,7 @@ import { useModalities } from '../../hooks/useModalities'
 import FilterBar from '../../components/common/FilterBar'
 import { useStandings } from '../../hooks/useStandings'
 import { usePodiums, usePenalties } from '../../hooks/useMedals'
-import { buildMedalRanking, MEDALHAS, PONTOS_POR_COLOCACAO } from '../../utils/medals'
+import { buildMedalRanking, MEDALHAS, PONTOS } from '../../utils/medals'
 import { useMatches } from '../../hooks/useMatches'
 import { useClasses } from '../../hooks/useClasses'
 import { useBracket } from '../../hooks/useBracket'
@@ -63,7 +63,7 @@ export default function Standings() {
 
   // GERAL = medalhas conquistadas em cada modalidade, menos as punições.
   // Vitória em jogo não vale ponto geral; o que vale é terminar no pódio.
-  const geral = buildMedalRanking(podiums, penalties, classes)
+  const geral = buildMedalRanking(podiums, penalties, classes, modalities)
   const standings = isGeral ? geral : modStandings
   const loading = isGeral ? podLoading : modLoading
 
@@ -89,6 +89,7 @@ export default function Standings() {
           groups={[{
             key: 'mod',
             label: 'Modalidade',
+            neutral: 'geral',
             value: modalityId,
             onChange: setModalityId,
             // a busca filtra as próprias opções do painel
@@ -113,8 +114,8 @@ export default function Standings() {
           </div>
         )}
         {isGeral && (
-          <p className="font-bracket font-bold text-[10px] tracking-[0.2em] text-arena-dim uppercase mb-3">
-            Ouro {PONTOS_POR_COLOCACAO.gold} · Prata {PONTOS_POR_COLOCACAO.silver} · Bronze {PONTOS_POR_COLOCACAO.bronze}
+          <p className="font-bracket font-bold text-[10px] tracking-[0.2em] text-arena-muted uppercase mb-3">
+            Esportes {PONTOS.esporte.gold}/{PONTOS.esporte.silver}/{PONTOS.esporte.bronze} · E-sports e mesa {PONTOS.mesa.gold}/{PONTOS.mesa.silver}/{PONTOS.mesa.bronze}
           </p>
         )}
 

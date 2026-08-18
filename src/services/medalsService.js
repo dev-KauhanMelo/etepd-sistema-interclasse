@@ -1,16 +1,19 @@
 import { addDoc, collection, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore'
 import { db } from './firebase'
+import { podiumId } from '../utils/medals'
 
-// Pódio de uma modalidade: um documento por modalidade, com o classId de cada
-// colocação. Regravar substitui — a comissão pode corrigir sem duplicar.
-export async function savePodium(modalityId, { gold = null, silver = null, bronze = null }) {
-  return setDoc(doc(db, 'podiums', modalityId), {
-    modalityId, gold, silver, bronze, updatedAt: serverTimestamp(),
+// Pódio de uma disputa: um documento por modalidade + categoria, porque
+// Basquete masculino e feminino terminam com colocações diferentes. Cada
+// colocação é uma LISTA de turmas — no feminino há times unidos (2ºB/2ºC).
+// Regravar substitui, então a comissão corrige sem duplicar.
+export async function savePodium(modalityId, categoria, { gold = [], silver = [], bronze = [] }) {
+  return setDoc(doc(db, 'podiums', podiumId(modalityId, categoria)), {
+    modalityId, categoria, gold, silver, bronze, updatedAt: serverTimestamp(),
   })
 }
 
-export async function clearPodium(modalityId) {
-  return deleteDoc(doc(db, 'podiums', modalityId))
+export async function clearPodium(modalityId, categoria) {
+  return deleteDoc(doc(db, 'podiums', podiumId(modalityId, categoria)))
 }
 
 // Punição: desconto de pontos no ranking geral. Fica registrada uma a uma (e
