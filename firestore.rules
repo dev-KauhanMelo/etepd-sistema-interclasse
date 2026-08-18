@@ -23,6 +23,9 @@ service cloud.firestore {
         request.resource.data.get('cheerCountB', 0) <= resource.data.get('cheerCountB', 0) + 1;
     }
     match /standings/{doc}     { allow read: if true; allow write: if isAdmin(); }
+    // Pódio de cada modalidade e punições: alimentam o ranking geral.
+    match /podiums/{doc}       { allow read: if true; allow write: if isAdmin(); }
+    match /penalties/{doc}     { allow read: if true; allow write: if isAdmin(); }
     match /brackets/{doc}      { allow read: if true; allow write: if isAdmin(); }
     match /announcements/{doc} { allow read: if true; allow write: if isAdmin(); }
     match /settings/{doc}      { allow read: if true; allow write: if isAdmin(); }

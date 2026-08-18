@@ -5,7 +5,8 @@ import Button from '../common/Button'
 const links = [
   { to: '/admin', label: 'Painel' },
   { to: '/admin/jogos', label: 'Jogos' },
-  { to: '/admin/ranking', label: 'Ranking' },
+  { to: '/admin/geral', label: 'Ranking geral' },
+  { to: '/admin/ranking', label: 'Tabelas' },
   { to: '/admin/chaveamento', label: 'Chaveamento' },
   { to: '/admin/avisos', label: 'Avisos' },
   { to: '/admin/cadastro', label: 'Turmas/Modalidades' },

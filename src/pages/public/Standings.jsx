@@ -10,7 +10,9 @@ import TimeTable from '../../components/standings/TimeTable'
 import GroupStage from '../../components/bracket/GroupStage'
 import { useModalities } from '../../hooks/useModalities'
 import FilterBar from '../../components/common/FilterBar'
-import { useStandings, useAllStandings, aggregateGeneral } from '../../hooks/useStandings'
+import { useStandings } from '../../hooks/useStandings'
+import { usePodiums, usePenalties } from '../../hooks/useMedals'
+import { buildMedalRanking, MEDALHAS, PONTOS_POR_COLOCACAO } from '../../utils/medals'
 import { useMatches } from '../../hooks/useMatches'
 import { useClasses } from '../../hooks/useClasses'
 import { useBracket } from '../../hooks/useBracket'
@@ -55,12 +57,15 @@ export default function Standings() {
   // Se a aba escolhida não existe nesta modalidade, cai na primeira
   const activeTab = tabs.some((t) => t.key === tab) ? tab : tabs[0]?.key
   const { standings: modStandings, loading: modLoading } = useStandings(activeModality, format)
-  const { rows: allRows, loading: allLoading } = useAllStandings()
+  const { podiums, loading: podLoading } = usePodiums()
+  const { penalties } = usePenalties()
   const { matches } = useMatches()
 
-  // GERAL = soma da campanha de cada turma em todas as modalidades
-  const standings = isGeral ? aggregateGeneral(allRows) : modStandings
-  const loading = isGeral ? allLoading : modLoading
+  // GERAL = medalhas conquistadas em cada modalidade, menos as punições.
+  // Vitória em jogo não vale ponto geral; o que vale é terminar no pódio.
+  const geral = buildMedalRanking(podiums, penalties, classes)
+  const standings = isGeral ? geral : modStandings
+  const loading = isGeral ? podLoading : modLoading
 
   const bracketMatches = matches.filter((m) => m.modalityId === activeModality && m.phase !== 'grupos')
   const phases = ['oitavas', 'quartas', 'semifinal', 'final'].filter((p) => bracketMatches.some((m) => m.phase === p))
@@ -109,7 +114,7 @@ export default function Standings() {
         )}
         {isGeral && (
           <p className="font-bracket font-bold text-[10px] tracking-[0.2em] text-arena-dim uppercase mb-3">
-            Soma de todas as modalidades
+            Ouro {PONTOS_POR_COLOCACAO.gold} · Prata {PONTOS_POR_COLOCACAO.silver} · Bronze {PONTOS_POR_COLOCACAO.bronze}
           </p>
         )}
 
@@ -132,7 +137,7 @@ export default function Standings() {
           ) : (
             <>
               {/* Pódio dos 3 primeiros */}
-              {podium.length >= 2 && (
+              {podium.length >= 2 && podium[0]?.points > 0 && (
                 <div className="flex items-end justify-center gap-2.5 mb-5 mt-2 animate-pop-in">
                   {[1, 0, 2].map((idx) => podium[idx] && (
                     <PodiumSpot key={podium[idx].id} standing={podium[idx]} team={teamOf(podium[idx])} place={idx + 1} />
@@ -144,11 +149,21 @@ export default function Standings() {
               <div className="flex items-center gap-2 px-2 pb-1.5 font-bracket font-bold text-[11px] tracking-[0.12em] text-arena-dim uppercase">
                 <span className="w-7" aria-hidden="true" />
                 <span className="flex-1">Turma</span>
-                <span className="w-8 text-center">P</span>
-                <span className="w-6 text-center">V</span>
-                <span className="w-6 text-center">E</span>
-                <span className="w-6 text-center">D</span>
-                <span className="w-8 text-center">SG</span>
+                <span className="w-10 text-center">Pts</span>
+                {isGeral ? (
+                  MEDALHAS.map((m) => (
+                    <span key={m.key} className="w-7 flex justify-center" title={m.label}>
+                      <MedalDot color={m.color} />
+                    </span>
+                  ))
+                ) : (
+                  <>
+                    <span className="w-6 text-center">V</span>
+                    <span className="w-6 text-center">E</span>
+                    <span className="w-6 text-center">D</span>
+                    <span className="w-8 text-center">SG</span>
+                  </>
+                )}
               </div>
 
               {/* Linhas separadas; o líder ganha o degradê dourado */}
@@ -174,13 +189,34 @@ export default function Standings() {
                           {team.name}
                         </span>
                       </span>
-                      <span className={`w-8 text-center font-bracket-display text-[15px] ${leader ? 'text-gold' : 'text-white'}`}>{s.points}</span>
-                      <span className="w-6 text-center font-bracket font-semibold text-[13px] text-arena-muted">{s.wins}</span>
-                      <span className="w-6 text-center font-bracket font-semibold text-[13px] text-arena-muted">{s.draws}</span>
-                      <span className="w-6 text-center font-bracket font-semibold text-[13px] text-arena-muted">{s.losses}</span>
-                      <span className="w-8 text-center font-bracket font-semibold text-[13px] text-arena-muted">
-                        {(s.scoredFor || 0) - (s.scoredAgainst || 0) > 0 ? '+' : ''}{(s.scoredFor || 0) - (s.scoredAgainst || 0)}
+                      {/* Punição pode levar o saldo abaixo de zero — o vermelho
+                          deixa claro que o número negativo é intencional. */}
+                      <span className={`w-10 text-center font-bracket-display text-[15px] ${
+                        s.points < 0 ? 'text-live' : leader ? 'text-gold' : 'text-white'
+                      }`}>
+                        {s.points}
                       </span>
+                      {isGeral ? (
+                        MEDALHAS.map((m) => (
+                          <span
+                            key={m.key}
+                            className={`w-7 text-center font-bracket-display text-[15px] ${
+                              s[m.key] > 0 ? 'text-white' : 'text-arena-dim'
+                            }`}
+                          >
+                            {s[m.key]}
+                          </span>
+                        ))
+                      ) : (
+                        <>
+                          <span className="w-6 text-center font-bracket font-semibold text-[13px] text-arena-muted">{s.wins}</span>
+                          <span className="w-6 text-center font-bracket font-semibold text-[13px] text-arena-muted">{s.draws}</span>
+                          <span className="w-6 text-center font-bracket font-semibold text-[13px] text-arena-muted">{s.losses}</span>
+                          <span className="w-8 text-center font-bracket font-semibold text-[13px] text-arena-muted">
+                            {(s.scoredFor || 0) - (s.scoredAgainst || 0) > 0 ? '+' : ''}{(s.scoredFor || 0) - (s.scoredAgainst || 0)}
+                          </span>
+                        </>
+                      )}
                     </div>
                   )
                 })}
@@ -270,6 +306,17 @@ function PodiumSpot({ standing, team, place }) {
         <span className={`font-bracket-display ${first ? 'text-[26px] text-gold' : 'text-xl text-arena-dim'}`}>{place}</span>
       </div>
     </div>
+  )
+}
+
+// Disco da medalha no cabeçalho: a cor diz qual é sem precisar de legenda.
+function MedalDot({ color }) {
+  return (
+    <span
+      className="w-3 h-3 rounded-full border border-black/20"
+      style={{ background: color }}
+      aria-hidden="true"
+    />
   )
 }
 

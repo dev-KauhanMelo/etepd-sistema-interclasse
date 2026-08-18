@@ -17,6 +17,7 @@ import ManageMatches from '../pages/admin/ManageMatches'
 import UpdateScore from '../pages/admin/UpdateScore'
 import ManageAnnouncements from '../pages/admin/ManageAnnouncements'
 import ManageStandings from '../pages/admin/ManageStandings'
+import ManageGeneral from '../pages/admin/ManageGeneral'
 import ManageBracket from '../pages/admin/ManageBracket'
 import ManageClasses from '../pages/admin/ManageClasses'
 import ManageSettings from '../pages/admin/ManageSettings'
@@ -41,6 +42,7 @@ export default function AppRoutes() {
         <Route path="jogos" element={<ManageMatches />} />
         <Route path="jogos/:id/placar" element={<UpdateScore />} />
         <Route path="ranking" element={<ManageStandings />} />
+        <Route path="geral" element={<ManageGeneral />} />
         <Route path="chaveamento" element={<ManageBracket />} />
         <Route path="avisos" element={<ManageAnnouncements />} />
         <Route path="cadastro" element={<ManageClasses />} />
