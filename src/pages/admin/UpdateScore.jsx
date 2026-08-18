@@ -8,19 +8,17 @@ import { advanceWinnerInBracket } from '../../services/bracketsService'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import MatchStatusBadge from '../../components/match/MatchStatusBadge'
-import { MATCH_STATUS } from '../../utils/constants'
 import { scoringOf } from '../../utils/scoring'
 import { usePendingScore } from '../../hooks/usePendingScore'
 
-const STATUSES = ['scheduled', 'live', 'paused', 'finished', 'suspended', 'cancelled']
-
-// Tela que o juiz usa durante o jogo: placar em cima, status embaixo.
+// Tela do juiz. A partida tem um ciclo — começa, roda, acaba — e a tela mostra
+// só o que faz sentido em cada ponto dele: antes de começar não há placar pra
+// marcar, e depois de encerrar não há o que pausar. Os desvios (pausar, adiar,
+// suspender, cancelar) ficam sempre à mão, mas discretos, porque são exceção.
 //
-// O placar só aparece se a modalidade tiver placar — marcar "3 a 0" num Call of
-// Duty não quer dizer nada, e Free Fire e Cubo Mágico nem são turma contra turma
-// (ver utils/scoring.js). Ao marcar Encerrado, o vencedor entra sozinho na
-// próxima chave: quando o placar decide, é automático; quando não decide
-// (empate, ou modalidade sem placar), a tela pergunta quem passou.
+// Finalizar sempre pergunta quem venceu, mesmo com o placar na tela: é o único
+// dado que o chaveamento consome, e uma pergunta a mais custa menos que uma
+// chave errada. Escolhido o vencedor, ele avança sozinho até a final.
 export default function UpdateScore() {
   const { id } = useParams()
   const { match, loading } = useMatch(id)
@@ -29,6 +27,7 @@ export default function UpdateScore() {
   const navigate = useNavigate()
   const [note, setNote] = useState('')
   const [aviso, setAviso] = useState(null)
+  const [encerrando, setEncerrando] = useState(false)
 
   // Toques no +/- viram UMA gravação (ver hooks/usePendingScore)
   const { placar, ajustar, salvando, gravarAgora } = usePendingScore(
@@ -42,149 +41,257 @@ export default function UpdateScore() {
   const scoring = scoringOf(modName)
   const mostraPlacar = scoring.tipo === 'placar' || scoring.tipo === 'sets'
 
-  // Encerrado sem vencedor definido: precisa perguntar quem passou
-  const perguntaVencedor = match.status === 'finished' && !match.winnerSide
+  const status = match.status
+  const emJogo = status === 'live' || status === 'paused'
+  const acabou = status === 'finished'
+  const parado = status === 'suspended' || status === 'cancelled' || status === 'postponed'
 
-  // Marca o vencedor e empurra pro chaveamento
+  const mudar = (novo) => {
+    setAviso(null)
+    return updateMatch(match.id, { status: novo }, user?.uid)
+  }
+
+  const confirmarE = (pergunta, novo) => () => {
+    if (confirm(pergunta)) mudar(novo)
+  }
+
+  // Encerra e empurra o vencedor pra próxima chave
   const definirVencedor = async (side) => {
     const nome = side === 'A' ? match.teamA?.name : match.teamB?.name
+    setEncerrando(true)
     setAviso(null)
     try {
+      gravarAgora()
       await updateMatch(match.id, { status: 'finished', winnerSide: side }, user?.uid)
       const r = await advanceWinnerInBracket(match.modalityId, match, side)
-      setAviso(
-        r.ok
-          ? { erro: false, texto: `${nome} venceu — já avançou no chaveamento.` }
-          : { erro: false, texto: `${nome} venceu. Esta modalidade não tem chaveamento montado.` }
-      )
+      setAviso({
+        erro: false,
+        texto: r.ok
+          ? `${nome} venceu — já avançou no chaveamento.`
+          : `${nome} venceu. Esta modalidade não tem chaveamento montado.`,
+      })
     } catch (e) {
       console.error(e)
       setAviso({ erro: true, texto: 'Não deu pra salvar. Confere a internet e tenta de novo.' })
+    } finally {
+      setEncerrando(false)
     }
-  }
-
-  const mudarStatus = async (s) => {
-    // Grava o que estava pendente antes de olhar o placar — senão o vencedor
-    // sairia de um número desatualizado.
-    gravarAgora()
-    if (s === 'finished' && mostraPlacar && placar('A') !== placar('B')) {
-      return definirVencedor(placar('A') > placar('B') ? 'A' : 'B')
-    }
-    setAviso(null)
-    await updateMatch(match.id, { status: s }, user?.uid)
   }
 
   return (
     <div className="pb-8">
       <button onClick={() => navigate('/admin/jogos')} className="text-sm text-slate-400 mb-3">← Voltar</button>
 
+      {/* Quem joga, em que estado está */}
       <Card className="mb-4">
-        <p className="text-center text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">
+        <p className="text-center text-xs font-semibold text-slate-400 uppercase tracking-wide">
           {modName} · {match.location}
         </p>
-        {mostraPlacar ? (
-          <>
-            <div className="flex items-center justify-around">
-              <ScoreControl team={match.teamA} score={placar('A')} onAdjust={(d) => ajustar('A', d)} />
-              <span className="text-slate-300 score-number text-2xl">×</span>
-              <ScoreControl team={match.teamB} score={placar('B')} onAdjust={(d) => ajustar('B', d)} />
-            </div>
-            <p className="text-center text-[11px] text-slate-400 mt-2 h-4">
-              {salvando ? 'salvando…' : ''}
-            </p>
-            {scoring.tipo === 'sets' && (
-              <p className="text-center text-xs text-slate-400 mt-3">
-                Marque as {scoring.unidade} que cada lado venceu.
-              </p>
-            )}
-          </>
-        ) : (
-          <>
-            <p className="text-center text-lg font-bold text-slate-700">
-              {match.teamA?.name} × {match.teamB?.name}
-            </p>
-            <p className="text-center text-xs text-slate-400 mt-2">
-              {scoring.tipo === 'nenhum'
-                ? 'Esta modalidade não é decidida em confronto direto — lance os resultados na aba Classificação.'
-                : 'Nesta modalidade não se marca placar: ao encerrar, escolha quem passou.'}
-            </p>
-          </>
-        )}
+        <p className="text-center text-lg font-bold text-slate-700 mt-2">
+          {match.teamA?.name} × {match.teamB?.name}
+        </p>
+        <div className="flex justify-center mt-3"><MatchStatusBadge status={status} /></div>
       </Card>
 
-      <Card className="mb-4">
-        <p className="text-sm font-semibold mb-2">Status da partida</p>
-        <div className="flex flex-wrap gap-2">
-          {STATUSES.map((s) => (
-            <button
-              key={s}
-              onClick={() => mudarStatus(s)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold ${match.status === s ? 'ring-2 ring-brand bg-brand/10' : 'bg-slate-100'}`}
-            >
-              {MATCH_STATUS[s].label}
-            </button>
-          ))}
-        </div>
-        <div className="mt-3"><MatchStatusBadge status={match.status} /></div>
-      </Card>
-
-      {/* Só aparece quando o placar não resolve: empate ou modalidade sem placar */}
-      {perguntaVencedor && (
-        <Card className="mb-4 border-2 border-brand/30">
-          <p className="text-sm font-semibold mb-1">Quem venceu?</p>
-          <p className="text-xs text-slate-400 mb-3">O vencedor avança sozinho no chaveamento.</p>
-          <div className="grid grid-cols-2 gap-3">
-            <WinnerButton team={match.teamA} onClick={() => definirVencedor('A')} />
-            <WinnerButton team={match.teamB} onClick={() => definirVencedor('B')} />
-          </div>
-        </Card>
+      {/* ANTES DE COMEÇAR */}
+      {status === 'scheduled' && (
+        <>
+          <button
+            onClick={() => mudar('live')}
+            className="w-full rounded-2xl bg-brand text-white py-5 text-lg font-bold shadow-card active:scale-[0.98] transition"
+          >
+            COMEÇAR JOGO
+          </button>
+          <p className="text-center text-xs text-slate-400 mt-2 mb-4">
+            A partir daí o jogo aparece como <strong>ao vivo</strong> pra todo mundo.
+          </p>
+          <SecondaryRow>
+            <Secondary onClick={confirmarE('Adiar este jogo?', 'postponed')}>Adiar</Secondary>
+            <Secondary danger onClick={confirmarE('Cancelar este jogo?', 'cancelled')}>Cancelar</Secondary>
+          </SecondaryRow>
+        </>
       )}
 
-      {match.status === 'finished' && match.winnerSide && (
-        <Card className="mb-4 border-2 border-emerald-500/40 bg-emerald-50/60">
-          <p className="text-sm font-bold text-emerald-800">
-            Venceu {match.winnerSide === 'A' ? match.teamA?.name : match.teamB?.name}
-          </p>
-          <button
-            onClick={() => updateMatch(match.id, { winnerSide: null }, user?.uid)}
-            className="text-xs text-slate-500 underline mt-2"
-          >
-            Marquei errado, trocar o vencedor
-          </button>
-        </Card>
+      {/* EM JOGO */}
+      {emJogo && (
+        <>
+          {status === 'paused' && (
+            <Card className="mb-4 bg-amber-50 border-2 border-amber-300">
+              <p className="text-sm font-bold text-amber-900 mb-3">Jogo pausado</p>
+              <button
+                onClick={() => mudar('live')}
+                className="w-full rounded-xl bg-brand text-white py-3 font-bold active:scale-[0.98] transition"
+              >
+                RETOMAR
+              </button>
+            </Card>
+          )}
+
+          {mostraPlacar ? (
+            <Card className="mb-4">
+              <p className="text-sm font-semibold mb-1">
+                {scoring.tipo === 'sets' ? `${scoring.unidade} ganhas` : `Marcar ${scoring.unidade}`}
+              </p>
+              <p className="text-xs text-slate-400 mb-3">Toque no + de quem marcou.</p>
+              <div className="flex items-center justify-around">
+                <ScoreControl team={match.teamA} score={placar('A')} onAdjust={(d) => ajustar('A', d)} />
+                <span className="text-slate-300 score-number text-2xl">×</span>
+                <ScoreControl team={match.teamB} score={placar('B')} onAdjust={(d) => ajustar('B', d)} />
+              </div>
+              <p className="text-center text-[11px] text-slate-400 mt-2 h-4">{salvando ? 'salvando…' : ''}</p>
+            </Card>
+          ) : (
+            <Card className="mb-4">
+              <p className="text-center text-xs text-slate-400">
+                {scoring.tipo === 'nenhum'
+                  ? 'Esta modalidade não é decidida em confronto direto — lance os resultados na aba Classificação.'
+                  : 'Nesta modalidade não se marca placar: ao finalizar, escolha quem passou.'}
+              </p>
+            </Card>
+          )}
+
+          <NoteBox match={match} note={note} setNote={setNote} uid={user?.uid} />
+
+          {/* Fim do jogo — o passo que importa */}
+          <FinishBox match={match} onPick={definirVencedor} disabled={encerrando} />
+
+          <SecondaryRow className="mt-4">
+            {status === 'live' && <Secondary onClick={() => mudar('paused')}>Pausar</Secondary>}
+            <Secondary onClick={confirmarE('Suspender este jogo?', 'suspended')}>Suspender</Secondary>
+            <Secondary danger onClick={confirmarE('Cancelar este jogo?', 'cancelled')}>Cancelar</Secondary>
+          </SecondaryRow>
+        </>
+      )}
+
+      {/* ENCERRADO */}
+      {acabou && (
+        <>
+          <Card className="mb-4 border-2 border-emerald-500/40 bg-emerald-50/60">
+            {match.winnerSide ? (
+              <>
+                <p className="text-sm font-bold text-emerald-800">
+                  Venceu {match.winnerSide === 'A' ? match.teamA?.name : match.teamB?.name}
+                  {mostraPlacar ? ` · ${placar('A')} × ${placar('B')}` : ''}
+                </p>
+                <button
+                  onClick={() => updateMatch(match.id, { winnerSide: null }, user?.uid)}
+                  className="text-xs text-slate-500 underline mt-2"
+                >
+                  Marquei errado, trocar o vencedor
+                </button>
+              </>
+            ) : (
+              <p className="text-sm font-bold text-slate-700">Jogo encerrado — falta dizer quem venceu</p>
+            )}
+          </Card>
+
+          {!match.winnerSide && (
+            <FinishBox match={match} onPick={definirVencedor} disabled={encerrando} aberto />
+          )}
+
+          <SecondaryRow className="mt-2">
+            <Secondary onClick={() => mudar('live')}>Reabrir o jogo</Secondary>
+          </SecondaryRow>
+        </>
+      )}
+
+      {/* PARADO (suspenso, adiado, cancelado) */}
+      {parado && (
+        <SecondaryRow className="mb-4">
+          <Secondary onClick={() => mudar('scheduled')}>Voltar pra agendado</Secondary>
+          <Secondary onClick={() => mudar('live')}>Começar agora</Secondary>
+        </SecondaryRow>
       )}
 
       {aviso && (
-        <Card className={`mb-4 text-sm ${aviso.erro ? 'text-red-600' : 'text-slate-600'}`}>
-          {aviso.texto}
-        </Card>
+        <Card className={`mt-4 text-sm ${aviso.erro ? 'text-red-600' : 'text-slate-600'}`}>{aviso.texto}</Card>
       )}
 
-      <Card>
-        <p className="text-sm font-semibold mb-2">Aviso rápido da partida</p>
-        <div className="flex gap-2">
-          <input
-            value={note} onChange={(e) => setNote(e.target.value)}
-            placeholder="Ex.: Gol aos 12min"
-            className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          />
-          <Button onClick={async () => { if (note) { await addMatchNote(match, note, user?.uid); setNote('') } }}>
-            Enviar
-          </Button>
-        </div>
-        {match.matchNotes?.slice().reverse().map((n, i) => (
-          <p key={i} className="text-sm text-slate-500 mt-2">• {n}</p>
-        ))}
-      </Card>
+      {!emJogo && <div className="mt-4"><NoteBox match={match} note={note} setNote={setNote} uid={user?.uid} /></div>}
     </div>
   )
 }
 
-function WinnerButton({ team, onClick }) {
+// Finalizar em dois toques: o segundo é escolher o vencedor, que é o dado que
+// o chaveamento consome. Placar empatado ou modalidade sem placar cai aqui
+// igual — por isso a escolha é sempre explícita.
+function FinishBox({ match, onPick, disabled, aberto = false }) {
+  const [abrindo, setAbrindo] = useState(aberto)
+
+  if (!abrindo) {
+    return (
+      <button
+        onClick={() => setAbrindo(true)}
+        className="w-full rounded-2xl bg-emerald-600 text-white py-4 font-bold shadow-card active:scale-[0.98] transition"
+      >
+        FINALIZAR JOGO
+      </button>
+    )
+  }
+
+  return (
+    <Card className="border-2 border-emerald-500/40">
+      <p className="text-sm font-semibold mb-1">Quem venceu?</p>
+      <p className="text-xs text-slate-400 mb-3">O vencedor avança sozinho no chaveamento.</p>
+      <div className="grid grid-cols-2 gap-3">
+        <WinnerButton team={match.teamA} disabled={disabled} onClick={() => onPick('A')} />
+        <WinnerButton team={match.teamB} disabled={disabled} onClick={() => onPick('B')} />
+      </div>
+      {!aberto && (
+        <button onClick={() => setAbrindo(false)} className="text-xs text-slate-500 underline mt-3">
+          Ainda não acabou, voltar
+        </button>
+      )}
+    </Card>
+  )
+}
+
+function NoteBox({ match, note, setNote, uid }) {
+  return (
+    <Card className="mb-4">
+      <p className="text-sm font-semibold mb-1">Aviso deste jogo</p>
+      <p className="text-xs text-slate-400 mb-2">Aparece na tela do jogo pros alunos.</p>
+      <div className="flex gap-2">
+        <input
+          value={note} onChange={(e) => setNote(e.target.value)}
+          placeholder="Ex.: atraso de 10 minutos"
+          className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm"
+        />
+        <Button onClick={async () => { if (note) { await addMatchNote(match, note, uid); setNote('') } }}>
+          Enviar
+        </Button>
+      </div>
+      {match.matchNotes?.slice().reverse().map((n, i) => (
+        <p key={i} className="text-sm text-slate-500 mt-2">• {n}</p>
+      ))}
+    </Card>
+  )
+}
+
+// Os desvios do jogo: existem, mas não competem com o botão principal.
+function SecondaryRow({ children, className = '' }) {
+  return <div className={`flex flex-wrap gap-2 ${className}`}>{children}</div>
+}
+
+function Secondary({ children, onClick, danger = false }) {
   return (
     <button
       onClick={onClick}
-      className="rounded-2xl border-2 py-4 px-2 font-bold text-sm active:scale-95 transition"
+      className={`flex-1 min-w-[96px] rounded-xl border py-2.5 text-xs font-bold transition active:scale-95 ${
+        danger ? 'border-red-200 text-red-600 bg-red-50/60' : 'border-slate-200 text-slate-600 bg-white'
+      }`}
+    >
+      {children}
+    </button>
+  )
+}
+
+function WinnerButton({ team, onClick, disabled }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="rounded-2xl border-2 py-4 px-2 font-bold text-sm active:scale-95 transition disabled:opacity-50"
       style={{ borderColor: team?.color || '#cbd5e1', color: '#0E141D' }}
     >
       Venceu<br />

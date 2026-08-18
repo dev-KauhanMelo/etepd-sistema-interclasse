@@ -4,6 +4,7 @@ export const MATCH_STATUS = {
   paused: { label: 'Pausado', color: 'bg-amber-500' },
   finished: { label: 'Finalizado', color: 'bg-finished' },
   suspended: { label: 'Suspenso', color: 'bg-amber-600' },
+  postponed: { label: 'Adiado', color: 'bg-slate-500' },
   cancelled: { label: 'Cancelado', color: 'bg-slate-400' },
 }
 
