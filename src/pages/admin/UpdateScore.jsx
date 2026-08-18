@@ -71,9 +71,11 @@ export default function UpdateScore() {
       const r = await advanceWinnerInBracket(match.modalityId, match, side)
       setAviso({
         erro: false,
-        texto: r.ok
-          ? `${nome} venceu — já avançou no chaveamento.`
-          : `${nome} venceu. Esta modalidade não tem chaveamento montado.`,
+        texto: !r.ok
+          ? `${nome} venceu. Esta modalidade não tem chaveamento montado.`
+          : r.criados?.length
+            ? `${nome} venceu. Já avançou na chave e liberou: ${r.criados.join(', ')}.`
+            : `${nome} venceu — já avançou no chaveamento.`,
       })
     } catch (e) {
       console.error(e)

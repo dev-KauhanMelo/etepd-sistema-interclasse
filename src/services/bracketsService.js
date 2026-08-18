@@ -65,5 +65,69 @@ export async function advanceWinnerInBracket(modalityId, match, winnerSide) {
 
   const games = applyWinner(model.games, gameId, winnerIndex)
   await saveBracket(modalityId, { ...model, games })
-  return { ok: true, gameId }
+
+  // Avançar no desenho da chave não basta: a semifinal precisa existir como
+  // PARTIDA pro juiz poder abrir e apitar.
+  const criados = await criarJogosLiberados(modalityId, games, match)
+
+  return { ok: true, gameId, criados }
+}
+
+// JOGOS QUE NASCEM SOZINHOS
+//
+// Só os jogos 1 a 4 foram cadastrados — as semifinais, a disputa de 3º e a
+// final dependiam de resultados que ainda não existiam. Em vez de criar 72
+// partidas vazias no começo (que poluiriam o cronograma e custariam leitura
+// em toda visita), cada uma nasce no instante em que as DUAS vagas ficam
+// definidas. Antes disso ela não é um jogo — é uma incógnita.
+//
+// Local e dia vêm do confronto que classificou; hora fica "a definir" e se
+// resolve sozinha quando alguém apertar COMEÇAR JOGO.
+async function criarJogosLiberados(modalityId, games, origem) {
+  const { collection, getDocs, query, where, addDoc, updateDoc, doc: docRef, serverTimestamp: ts } =
+    await import('firebase/firestore')
+  const { BRACKET_GAMES } = await import('../utils/bracket')
+
+  const snap = await getDocs(query(collection(db, 'matches'), where('modalityId', '==', modalityId)))
+  const existentes = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+
+  const time = (slot) =>
+    slot?.classId
+      ? { classId: slot.classId, name: slot.name || null, color: slot.color || null, logoUrl: slot.logoUrl || null }
+      : null
+
+  const criados = []
+  for (const g of BRACKET_GAMES) {
+    const jogo = games[g.id]
+    const a = time(jogo?.slots?.[0])
+    const b = time(jogo?.slots?.[1])
+    if (!a || !b) continue // ainda falta alguém: não é jogo, é incógnita
+
+    const atual = existentes.find((m) => m.bracketGame === g.id)
+
+    if (!atual) {
+      await addDoc(collection(db, 'matches'), {
+        modalityId, bracketGame: g.id, phase: 'mata-mata', roundLabel: g.label,
+        teamA: a, teamB: b,
+        scoreA: 0, scoreB: 0, status: 'scheduled',
+        location: origem?.location || '', venue: origem?.venue || null, space: origem?.space || null,
+        // Data de agora, não a do jogo que classificou: se a fase anterior foi
+        // ontem, herdar aquela data esconderia a semifinal do filtro "Hoje".
+        scheduledAt: ts(),
+        timeTBD: true,
+        periodScores: [], currentPeriod: 1, matchNotes: [],
+        createdAt: ts(), lastUpdatedAt: ts(),
+      })
+      criados.push(g.label)
+      continue
+    }
+
+    // Jogo já existe: só corrige as turmas se ele ainda não rolou. Depois de
+    // começar, mexer nos times apagaria o que o juiz marcou.
+    if (atual.status !== 'scheduled') continue
+    const mudou = atual.teamA?.classId !== a.classId || atual.teamB?.classId !== b.classId
+    if (mudou) await updateDoc(docRef(db, 'matches', atual.id), { teamA: a, teamB: b, lastUpdatedAt: ts() })
+  }
+
+  return criados
 }

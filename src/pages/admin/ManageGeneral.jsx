@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import MedalTableEditor from '../../components/admin/MedalTableEditor'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import { useModalities } from '../../hooks/useModalities'
@@ -6,27 +7,28 @@ import { useClasses } from '../../hooks/useClasses'
 import { usePodiums, usePenalties } from '../../hooks/useMedals'
 import { useAuth } from '../../context/AuthContext'
 import { savePodium, clearPodium, addPenalty, removePenalty } from '../../services/medalsService'
-import {
-  buildMedalRanking, MEDALHAS, CATEGORIAS, podiumId, pontosDe, tipoDaModalidade,
-} from '../../utils/medals'
+import { MEDALHAS, CATEGORIAS, podiumId, pontosDe, tipoDaModalidade } from '../../utils/medals'
 
 // Painel do ranking geral: onde a comissão diz quem subiu no pódio de cada
 // modalidade e aplica punições. É o único lugar que alimenta a tabela geral —
 // resultado de jogo isolado não vale ponto geral, só colocação final.
 export default function ManageGeneral() {
-  const [aba, setAba] = useState('podios')
+  // A tabela é a tela principal: é como a comissão pensa o ranking. O
+  // formulário por modalidade continua, porque lançar um pódio inteiro de uma
+  // vez é mais rápido no momento em que a modalidade acaba.
+  const [aba, setAba] = useState('tabela')
 
   return (
     <div className="pb-8">
       <div className="flex gap-2 mb-4">
-        <Aba ativa={aba === 'podios'} onClick={() => setAba('podios')}>Pódios</Aba>
+        <Aba ativa={aba === 'tabela'} onClick={() => setAba('tabela')}>Tabela</Aba>
+        <Aba ativa={aba === 'podios'} onClick={() => setAba('podios')}>Por modalidade</Aba>
         <Aba ativa={aba === 'punicoes'} onClick={() => setAba('punicoes')}>Punições</Aba>
-        <Aba ativa={aba === 'previa'} onClick={() => setAba('previa')}>Como está</Aba>
       </div>
 
+      {aba === 'tabela' && <MedalTableEditor />}
       {aba === 'podios' && <Podios />}
       {aba === 'punicoes' && <Punicoes />}
-      {aba === 'previa' && <Previa />}
     </div>
   )
 }
@@ -300,41 +302,6 @@ function Punicoes() {
         )}
       </Card>
     </>
-  )
-}
-
-// A mesma conta que o público vê — pra comissão conferir antes de alguém
-// reclamar do resultado.
-function Previa() {
-  const { classes } = useClasses()
-  const { modalities } = useModalities()
-  const { podiums } = usePodiums()
-  const { penalties } = usePenalties()
-  const rows = buildMedalRanking(podiums, penalties, classes, modalities)
-
-  return (
-    <Card>
-      <p className="text-sm font-semibold mb-3">Ranking geral agora</p>
-      <div className="flex items-center gap-2 px-1 pb-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
-        <span className="w-5" />
-        <span className="flex-1">Turma</span>
-        <span className="w-14 text-center">Pts</span>
-        {MEDALHAS.map((m) => <span key={m.key} className="w-6 text-center">{m.short}</span>)}
-      </div>
-      {rows.map((r, i) => (
-        <div key={r.id} className="flex items-center gap-2 px-1 py-2 border-b border-slate-100 last:border-0">
-          <span className="w-5 text-center text-xs text-slate-400">{i + 1}</span>
-          <span className="flex-1 min-w-0 text-sm font-semibold text-slate-700 truncate">{r.className}</span>
-          <span className={`w-14 text-center text-sm font-bold ${r.points < 0 ? 'text-red-600' : 'text-slate-800'}`}>
-            {r.points}
-            {r.penalty > 0 && <span className="block text-[10px] font-normal text-red-500">−{r.penalty}</span>}
-          </span>
-          {MEDALHAS.map((m) => (
-            <span key={m.key} className="w-6 text-center text-sm text-slate-500">{r[m.key]}</span>
-          ))}
-        </div>
-      ))}
-    </Card>
   )
 }
 

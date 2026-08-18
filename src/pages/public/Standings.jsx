@@ -31,6 +31,9 @@ export default function Standings() {
   const [tab, setTab] = useState('classificacao')
   const [modQuery, setModQuery] = useState('')
 
+  // O chaveamento ficava a três toques de distância — funil, modalidade, aba —
+  // desde que a tela passou a abrir no ranking geral. Agora ele é uma escolha
+  // de primeiro nível: ou você quer a tabela geral, ou quer ver as chaves.
   const isGeral = modalityId === 'geral'
   const activeModality = isGeral ? modalities[0]?.id : (modalityId || modalities[0]?.id)
   const modality = modalities.find((m) => m.id === activeModality)
@@ -81,7 +84,21 @@ export default function Standings() {
     <div>
       <Header title="RANKING" subtitle="Quem está dominando o JIPD?" />
 
-      <div className="px-4 pt-1 pb-2">
+      <div className="px-4 pt-1">
+        <div className="cut-corner-sm bg-arena-panel p-1 flex gap-1 mb-2">
+          <TabButton active={isGeral} onClick={() => setModalityId('geral')}>
+            Ranking geral
+          </TabButton>
+          <TabButton
+            active={!isGeral}
+            onClick={() => { if (isGeral) { setModalityId(modalities[0]?.id); setTab('chaveamento') } }}
+          >
+            Chaveamentos
+          </TabButton>
+        </div>
+      </div>
+
+      <div className={`px-4 pb-2 ${isGeral ? 'hidden' : ''}`}>
         <FilterBar
           query={modQuery}
           onQueryChange={setModQuery}

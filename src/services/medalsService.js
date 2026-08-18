@@ -16,6 +16,26 @@ export async function clearPodium(modalityId, categoria) {
   return deleteDoc(doc(db, 'podiums', podiumId(modalityId, categoria)))
 }
 
+// Põe ou tira UMA turma de UMA colocação, sem tocar no resto do pódio. É o que
+// a tabela do ranking usa: ali a comissão pensa por turma ("o 3ºC ganhou mais
+// um ouro"), não por pódio inteiro.
+export async function toggleMedal({ modalityId, categoria = 'unico', key, classId, podium }) {
+  const atual = (k) => {
+    const v = podium?.[k]
+    return Array.isArray(v) ? v : v ? [v] : []
+  }
+  const lista = atual(key)
+  const nova = lista.includes(classId)
+    ? lista.filter((id) => id !== classId)
+    : [...lista, classId]
+
+  return savePodium(modalityId, categoria, {
+    gold: key === 'gold' ? nova : atual('gold'),
+    silver: key === 'silver' ? nova : atual('silver'),
+    bronze: key === 'bronze' ? nova : atual('bronze'),
+  })
+}
+
 // Punição: desconto de pontos no ranking geral. Fica registrada uma a uma (e
 // não como um total por turma) pra comissão poder revisar e desfazer só uma.
 export async function addPenalty({ classId, points, reason }, uid) {
