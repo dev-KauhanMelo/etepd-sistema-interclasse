@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useStickyState } from '../../hooks/useStickyState'
 import { Link } from 'react-router-dom'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
@@ -25,8 +26,8 @@ export default function ManageMatches() {
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState(null)
   const [query, setQuery] = useState('')
-  const [modalityFilter, setModalityFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [modalityFilter, setModalityFilter] = useStickyState('admJogos:mod', 'all')
+  const [statusFilter, setStatusFilter] = useStickyState('admJogos:status', 'all')
 
   const byStatus = statusFilter === 'today'
     ? matches.filter((m) => isToday(m.scheduledAt))

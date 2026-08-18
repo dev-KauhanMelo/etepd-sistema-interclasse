@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useStickyState } from '../../hooks/useStickyState'
 import Header from '../../components/layout/Header'
 import EmptyState from '../../components/common/EmptyState'
 import Loader from '../../components/common/Loader'
@@ -23,12 +24,12 @@ const STATUS_TABS = [
 export default function Schedule() {
   const { matches, loading } = useMatches()
   const { modalities } = useModalities()
-  const [modalityFilter, setModalityFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState(null) // null = ainda não escolhido pela pessoa
+  const [modalityFilter, setModalityFilter] = useStickyState('crono:mod', 'all')
+  const [statusFilter, setStatusFilter] = useStickyState('crono:status', null) // null = ainda não escolhido pela pessoa
   const [query, setQuery] = useState('')
   // Abre nos jogos, não na grade: quem toca aqui quer saber que jogo tem agora.
-  const [tab, setTab] = useState('jogos')
-  const [venueFilter, setVenueFilter] = useState('all')
+  const [tab, setTab] = useStickyState('crono:aba', 'jogos')
+  const [venueFilter, setVenueFilter] = useStickyState('crono:local', 'all')
   const [showAll, setShowAll] = useState(false)
 
   if (loading) return <Loader />

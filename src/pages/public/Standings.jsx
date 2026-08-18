@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useStickyState } from '../../hooks/useStickyState'
 import Header from '../../components/layout/Header'
 import EmptyState from '../../components/common/EmptyState'
 import Loader from '../../components/common/Loader'
@@ -27,8 +28,8 @@ const GRUPOS_FEMININO = ['voleibol', 'basquete', 'futsal', 'futmesa', 'quadrado 
 export default function Standings() {
   const { modalities } = useModalities()
   const { classes } = useClasses()
-  const [modalityId, setModalityId] = useState('geral')
-  const [tab, setTab] = useState('classificacao')
+  const [modalityId, setModalityId] = useStickyState('rank:mod', 'geral')
+  const [tab, setTab] = useStickyState('rank:aba', 'classificacao')
   const [modQuery, setModQuery] = useState('')
 
   // O chaveamento ficava a três toques de distância — funil, modalidade, aba —

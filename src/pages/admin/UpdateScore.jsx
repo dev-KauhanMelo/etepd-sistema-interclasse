@@ -11,6 +11,9 @@ import Button from '../../components/common/Button'
 import MatchStatusBadge from '../../components/match/MatchStatusBadge'
 import { scoringOf } from '../../utils/scoring'
 import { usePendingScore } from '../../hooks/usePendingScore'
+import { useBracket } from '../../hooks/useBracket'
+import ClosePodium from '../../components/admin/ClosePodium'
+import { mergeBracket } from '../../utils/bracket'
 
 // Tela do juiz. A partida tem um ciclo — começa, roda, acaba — e a tela mostra
 // só o que faz sentido em cada ponto dele: antes de começar não há placar pra
@@ -25,6 +28,7 @@ export default function UpdateScore() {
   const { match, loading } = useMatch(id)
   const { modalities } = useModalities()
   const { user } = useAuth()
+  const { bracket } = useBracket(match?.modalityId)
   const navigate = useNavigate()
   const [note, setNote] = useState('')
   const [aviso, setAviso] = useState(null)
@@ -41,6 +45,21 @@ export default function UpdateScore() {
   const modName = modalities.find((m) => m.id === match.modalityId)?.name || ''
   const scoring = scoringOf(modName)
   const mostraPlacar = scoring.tipo === 'placar' || scoring.tipo === 'sets'
+
+  // Final da modalidade: aqui o pódio inteiro pode ser fechado de uma vez.
+  const ehFinal = match.bracketGame === 'final'
+  const perdedoresDeSemi = (() => {
+    if (!ehFinal || !bracket) return []
+    const games = mergeBracket(bracket).games
+    // jogo7 e jogo6 alimentam a final: quem perdeu ali ficou em 3º
+    return ['jogo7', 'jogo6']
+      .map((g) => {
+        const j = games[g]
+        if (!j || j.winner === null) return null
+        return j.slots[j.winner === 0 ? 1 : 0]?.classId || null
+      })
+      .filter(Boolean)
+  })()
 
   const status = match.status
   const emJogo = status === 'live' || status === 'paused'
@@ -194,6 +213,15 @@ export default function UpdateScore() {
 
           {!match.winnerSide && (
             <FinishBox match={match} onPick={definirVencedor} disabled={encerrando} aberto />
+          )}
+
+          {ehFinal && match.winnerSide && (
+            <ClosePodium
+              match={match}
+              modalityId={match.modalityId}
+              modalityName={modName}
+              sugestao3={perdedoresDeSemi}
+            />
           )}
 
           <SecondaryRow className="mt-2">
