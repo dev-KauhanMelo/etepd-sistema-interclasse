@@ -6,6 +6,7 @@ import { useModalities } from '../../hooks/useModalities'
 import { useAuth } from '../../context/AuthContext'
 import { addMatchNote, updateMatch } from '../../services/matchesService'
 import { advanceWinnerInBracket } from '../../services/bracketsService'
+import { recalcGroupStandings } from '../../services/groupStageService'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import MatchStatusBadge from '../../components/match/MatchStatusBadge'
@@ -53,8 +54,12 @@ export default function UpdateScore() {
   const mostraPlacar = scoring.tipo !== 'nenhum'
   const placarIncomum = scoring.tipo === 'vencedor'
 
+  // Fase de grupos (feminino): todos contra todos, sem chave. O resultado
+  // alimenta a tabela da modalidade, não um próximo confronto.
+  const ehGrupos = match.phase === 'grupos' || modality?.standingsFormat === 'classico'
+
   // Final da modalidade: aqui o pódio inteiro pode ser fechado de uma vez.
-  const ehFinal = match.bracketGame === 'final'
+  const ehFinal = match.bracketGame === 'final' && !ehGrupos
   const perdedoresDeSemi = (() => {
     if (!ehFinal || !bracket) return []
     const games = mergeBracket(bracket).games
@@ -94,6 +99,19 @@ export default function UpdateScore() {
     try {
       gravarAgora()
       await updateMatch(match.id, { status: 'finished', winnerSide: side }, user?.uid)
+
+      // Fase de grupos não tem chave pra avançar: o que anda é a tabela.
+      if (ehGrupos) {
+        const g = await recalcGroupStandings(match.modalityId)
+        setAviso({
+          erro: false,
+          texto: g.ok
+            ? `${nome} venceu. Tabela do grupo atualizada (${g.jogos} jogo${g.jogos === 1 ? '' : 's'} contabilizado${g.jogos === 1 ? '' : 's'}).`
+            : `${nome} venceu.`,
+        })
+        return
+      }
+
       const r = await advanceWinnerInBracket(match.modalityId, match, side)
       setAviso({
         erro: false,

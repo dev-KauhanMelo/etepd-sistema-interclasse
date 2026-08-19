@@ -13,14 +13,23 @@ export const PONTOS = {
 // Quais modalidades são "esporte" (§10.1). O resto cai em e-sports e jogos de
 // mesa (§10.2). Chave: nome em minúsculas, sem acento.
 const ESPORTES = new Set([
-  'futsal masculino', 'futsal', 'handebol', 'basquete', 'voleibol',
-  'queimado', 'barra bandeira', 'quadrado volei',
+  'futsal masculino', 'futsal', 'handebol', 'basquete', 'voleibol', 'volei',
+  'queimado', 'barra bandeira', 'quadrado volei', 'futmesa',
 ])
 
 const chave = (nome) =>
   String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 
-export const tipoDaModalidade = (nome) => (ESPORTES.has(chave(nome)) ? 'esporte' : 'mesa')
+// A categoria no nome não muda o que a modalidade é: "Voleibol Feminino" vale
+// como esporte igual a "Voleibol" (§10.1), e não como jogo de mesa.
+const semCategoria = (k) =>
+  k.replace(/\b(feminino|masculino|fem|masc|misto)\b/g, '').replace(/\s+/g, ' ').trim()
+
+export const tipoDaModalidade = (nome) => {
+  const k = semCategoria(chave(nome))
+  const ehEsporte = ESPORTES.has(k) || [...ESPORTES].some((e) => k.includes(e) || e.includes(k))
+  return ehEsporte ? 'esporte' : 'mesa'
+}
 export const pontosDe = (nome) => PONTOS[tipoDaModalidade(nome)]
 
 export const MEDALHAS = [
@@ -46,10 +55,21 @@ export const podiumId = (modalityId, categoria = 'unico') => `${modalityId}__${c
 export function buildMedalRanking(podiums = [], penalties = [], classes = [], modalities = []) {
   const linhas = new Map()
 
+  // Times combinados (Primeirão, Terceirão, 2ºB/2ºC) existem como turma só
+  // pra poder entrar num jogo — mas não são uma turma, são várias. No ranking
+  // geral eles não aparecem: a medalha que o time ganhou vira medalha de cada
+  // turma que o formou.
+  const turmasReais = classes.filter((c) => !c.isTeam)
+  const expandir = (id) => {
+    const c = classes.find((x) => x.id === id)
+    if (c?.isTeam) return Array.isArray(c.memberIds) ? c.memberIds : []
+    return id ? [id] : []
+  }
+
   const linha = (classId) => {
     if (!classId) return null
     if (!linhas.has(classId)) {
-      const cls = classes.find((c) => c.id === classId)
+      const cls = turmasReais.find((c) => c.id === classId)
       if (!cls) return null
       linhas.set(classId, {
         id: classId, classId,
@@ -63,13 +83,15 @@ export function buildMedalRanking(podiums = [], penalties = [], classes = [], mo
 
   // Toda turma aparece, mesmo zerada — sumir da tabela por ainda não ter
   // pontuado faz parecer que a turma não está no evento.
-  classes.forEach((c) => linha(c.id))
+  turmasReais.forEach((c) => linha(c.id))
 
   for (const p of podiums) {
     const mod = modalities.find((m) => m.id === p.modalityId)
     const valores = pontosDe(mod?.name)
     for (const { key } of MEDALHAS) {
-      const ids = Array.isArray(p[key]) ? p[key] : p[key] ? [p[key]] : []
+      const marcados = Array.isArray(p[key]) ? p[key] : p[key] ? [p[key]] : []
+      // Um time combinado no pódio vira todas as turmas que o formaram
+      const ids = [...new Set(marcados.flatMap(expandir))]
       for (const id of ids) {
         const l = linha(id)
         if (!l) continue
