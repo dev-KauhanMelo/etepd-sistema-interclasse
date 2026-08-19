@@ -33,6 +33,7 @@ export default function UpdateScore() {
   const [note, setNote] = useState('')
   const [aviso, setAviso] = useState(null)
   const [encerrando, setEncerrando] = useState(false)
+  const [unidade, setUnidade] = useState('pontos')
 
   // Toques no +/- viram UMA gravação (ver hooks/usePendingScore)
   const { placar, ajustar, salvando, gravarAgora } = usePendingScore(
@@ -42,9 +43,15 @@ export default function UpdateScore() {
 
   if (loading || !match) return <p className="text-sm text-slate-400">Carregando...</p>
 
-  const modName = modalities.find((m) => m.id === match.modalityId)?.name || ''
-  const scoring = scoringOf(modName)
-  const mostraPlacar = scoring.tipo === 'placar' || scoring.tipo === 'sets'
+  const modality = modalities.find((m) => m.id === match.modalityId)
+  const modName = modality?.name || ''
+  const scoring = scoringOf(modName, modality)
+  // O placar aparece sempre que a modalidade for turma × turma. Antes ele só
+  // aparecia numa lista fechada de nomes, e uma modalidade nova ("Vôlei
+  // Feminino") abria a tela SEM como marcar ponto — com o jogo já rolando.
+  // Nunca mais: só some quando a disputa não é confronto direto.
+  const mostraPlacar = scoring.tipo !== 'nenhum'
+  const placarIncomum = scoring.tipo === 'vencedor'
 
   // Final da modalidade: aqui o pódio inteiro pode ser fechado de uma vez.
   const ehFinal = match.bracketGame === 'final'
@@ -155,10 +162,25 @@ export default function UpdateScore() {
 
           {mostraPlacar ? (
             <Card className="mb-4">
-              <p className="text-sm font-semibold mb-1">
-                {scoring.tipo === 'sets' ? `${scoring.unidade} ganhas` : `Marcar ${scoring.unidade}`}
+              <div className="flex items-baseline justify-between mb-1">
+                <p className="text-sm font-semibold">
+                  {unidade === 'sets' ? 'Sets ganhos' : `Marcar ${scoring.unidade || 'pontos'}`}
+                </p>
+                {/* Vôlei se decide em sets, mas o juiz pode preferir acompanhar
+                    os pontos do set. Trocar aqui não muda o que está gravado —
+                    é o mesmo número, com outro nome. */}
+                <button
+                  onClick={() => setUnidade(unidade === 'sets' ? 'pontos' : 'sets')}
+                  className="text-[11px] text-brand underline"
+                >
+                  contar {unidade === 'sets' ? 'pontos' : 'sets'}
+                </button>
+              </div>
+              <p className="text-xs text-slate-400 mb-3">
+                {placarIncomum
+                  ? 'Esta modalidade costuma ser só "quem passou" — marque se precisar.'
+                  : 'Toque no + de quem marcou.'}
               </p>
-              <p className="text-xs text-slate-400 mb-3">Toque no + de quem marcou.</p>
               <div className="flex items-center justify-around">
                 <ScoreControl team={match.teamA} score={placar('A')} onAdjust={(d) => ajustar('A', d)} />
                 <span className="text-slate-300 score-number text-2xl">×</span>
@@ -169,9 +191,7 @@ export default function UpdateScore() {
           ) : (
             <Card className="mb-4">
               <p className="text-center text-xs text-slate-400">
-                {scoring.tipo === 'nenhum'
-                  ? 'Esta modalidade não é decidida em confronto direto — lance os resultados na aba Classificação.'
-                  : 'Nesta modalidade não se marca placar: ao finalizar, escolha quem passou.'}
+                Esta modalidade não é decidida em confronto direto — lance os resultados na aba Classificação.
               </p>
             </Card>
           )}
