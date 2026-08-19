@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import TeamCrest from './TeamCrest'
 import { matchTime, isTimeTBD } from '../../utils/formatDate'
 import SetLine from './SetLine'
+import { emAndamento, estaPausado } from '../../utils/matchFilters'
 
 // Card de confronto usado em todas as listas de jogos (Placar, Cronograma).
 //
@@ -11,7 +12,9 @@ import SetLine from './SetLine'
 //  - embaixo, o confronto respirando: bandeira 46px e nome da turma inteiro
 //    (`whitespace-nowrap` — nome de turma tem 4 caracteres, nunca deve cortar).
 export default function MatchRow({ match, modName }) {
-  const live = match.status === 'live'
+  // Pausado continua com o peso visual de jogo rolando — muda só o rótulo.
+  const live = emAndamento(match)
+  const pausado = estaPausado(match)
   const finished = match.status === 'finished'
   const scheduled = match.status === 'scheduled'
   const winner = !scheduled && match.scoreA !== match.scoreB ? (match.scoreA > match.scoreB ? 'A' : 'B') : null
@@ -35,16 +38,19 @@ export default function MatchRow({ match, modName }) {
     >
       {/* Véu escuro por cima das cores: garante o contraste do placar branco */}
       {live && <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,15,25,0.42),rgba(11,15,25,0.88))]" />}
-      {live && <div className="relative h-[3px] live-bar" />}
+      {live && !pausado && <div className="relative h-[3px] live-bar" />}
+      {pausado && <div className="relative h-[3px] bg-amber-500/70" />}
 
       {/* Andar 1 — meta */}
       <div className={`relative flex items-center justify-between gap-2 px-3.5 py-2.5 ${live ? 'border-b border-white/15' : 'border-b border-white/[0.06]'}`}>
         {live ? (
           // Pílula branca em volta do vermelho: o contraste faz o "ao vivo"
           // saltar mesmo por cima das cores fortes das turmas.
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-[3px] font-bracket font-bold text-[10px] tracking-[0.14em] uppercase text-live shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-live pulse-live" />
-            Ao vivo
+          <span className={`inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-[3px] font-bracket font-bold text-[10px] tracking-[0.14em] uppercase shadow-sm ${
+            pausado ? 'text-amber-600' : 'text-live'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${pausado ? 'bg-amber-500' : 'bg-live pulse-live'}`} />
+            {pausado ? 'Pausado' : 'Ao vivo'}
           </span>
         ) : (
           <span

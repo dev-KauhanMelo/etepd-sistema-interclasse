@@ -17,7 +17,7 @@ export default function TopBar() {
   // Uma frase por jogo ao vivo; o marquee repete o conjunto.
   const tickerItems = live.map(
     (m) =>
-      `⚡ AO VIVO — ${modName(m.modalityId)}: ${m.teamA?.name} ${m.scoreA ?? 0} × ${m.scoreB ?? 0} ${m.teamB?.name} · ${m.location}`
+      `${m.status === 'paused' ? '⏸ PAUSADO' : '⚡ AO VIVO'} — ${modName(m.modalityId)}: ${m.teamA?.name} ${m.scoreA ?? 0} × ${m.scoreB ?? 0} ${m.teamB?.name} · ${m.location}`
   )
 
   return (

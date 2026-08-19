@@ -3,6 +3,7 @@ import Loader from '../../components/common/Loader'
 import Credits from '../../components/layout/Credits'
 import TeamCrest from '../../components/match/TeamCrest'
 import SetLine from '../../components/match/SetLine'
+import { estaPausado } from '../../utils/matchFilters'
 import { useLiveMatches, useNextMatches } from '../../hooks/useLiveMatches'
 import { useModalities } from '../../hooks/useModalities'
 import { useAnnouncements } from '../../hooks/useAnnouncements'
@@ -165,6 +166,7 @@ export default function Home() {
 function LiveHero({ match, modName }) {
   const a = match.teamA?.color || '#DC2626'
   const b = match.teamB?.color || '#2563EB'
+  const pausado = estaPausado(match)
   return (
     <Link to={`/placar/${match.id}`} className="block mx-4 animate-pop-in">
       <div
@@ -174,9 +176,11 @@ function LiveHero({ match, modName }) {
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(11,15,25,0.30),rgba(11,15,25,0.86))]" />
         <div className="relative px-4 pt-3.5 pb-4">
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 font-bracket font-bold text-[11px] tracking-[0.1em] uppercase text-live shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-live pulse-live" />
-              Ao vivo
+            <span className={`inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 font-bracket font-bold text-[11px] tracking-[0.1em] uppercase shadow-sm ${
+              pausado ? 'text-amber-600' : 'text-live'
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${pausado ? 'bg-amber-500' : 'bg-live pulse-live'}`} />
+              {pausado ? 'Pausado' : 'Ao vivo'}
             </span>
             <span className="font-bracket font-bold text-[11px] tracking-[0.14em] text-white/75 uppercase">
               {modName}

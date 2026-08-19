@@ -12,6 +12,7 @@ import { useMatch } from '../../hooks/useMatch'
 import { useModalities } from '../../hooks/useModalities'
 import SetLine from '../../components/match/SetLine'
 import { scoringOf } from '../../utils/scoring'
+import { emAndamento } from '../../utils/matchFilters'
 import { matchDateTime } from '../../utils/formatDate'
 import { PHASE_LABELS } from '../../utils/constants'
 import { MATCH_STATUS } from '../../utils/constants'
@@ -34,7 +35,7 @@ export default function MatchDetail() {
     )
   }
 
-  const isLive = match.status === 'live'
+  const isLive = emAndamento(match)
   const finished = match.status === 'finished'
   const modality = modalities.find((m) => m.id === match.modalityId)
   const modName = modality?.name || ''

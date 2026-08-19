@@ -54,3 +54,15 @@ export function groupByDay(matches) {
   }
   return groups
 }
+
+// EM ANDAMENTO = ao vivo OU pausado
+//
+// Pausa é intervalo, troca de set, discussão de regra — a partida não acabou e
+// o time continua na quadra. Sumir da tela de ao vivo nesse momento é
+// justamente quando o aluno abre o site pra saber o que está acontecendo.
+// Tudo que decide "este jogo está rolando" passa por aqui, pra não voltar a
+// divergir de tela pra tela.
+export const EM_ANDAMENTO = ['live', 'paused']
+
+export const emAndamento = (match) => EM_ANDAMENTO.includes(match?.status)
+export const estaPausado = (match) => match?.status === 'paused'

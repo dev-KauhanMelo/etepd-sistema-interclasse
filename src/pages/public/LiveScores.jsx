@@ -10,6 +10,7 @@ import { useMatches } from '../../hooks/useMatches'
 import { useModalities } from '../../hooks/useModalities'
 import { isToday } from '../../utils/formatDate'
 import { filterMatches } from '../../utils/matchFilters'
+import { emAndamento } from '../../utils/matchFilters'
 
 const SEGMENTS = [
   { key: 'live', label: 'Ao vivo' },
@@ -33,17 +34,17 @@ export default function LiveScores() {
 
   const bySegment =
     segment === 'live'
-      ? matches.filter((m) => m.status === 'live')
+      ? matches.filter(emAndamento)
       : segment === 'finished'
         ? matches.filter((m) => m.status === 'finished')
-        : matches.filter((m) => isToday(m.scheduledAt) || m.status === 'live')
+        : matches.filter((m) => isToday(m.scheduledAt) || emAndamento(m))
 
   const visible = filterMatches(bySegment, { query, modalityId: modalityFilter, modalities })
     .filter((m) => venueFilter === 'all' || m.venue === venueFilter)
-    .sort((a, b) => (a.status === 'live' ? -1 : 1) - (b.status === 'live' ? -1 : 1))
+    .sort((a, b) => (emAndamento(a) ? -1 : 1) - (emAndamento(b) ? -1 : 1))
 
   const shown = showAll ? visible : visible.slice(0, PAGE)
-  const liveCount = matches.filter((m) => m.status === 'live').length
+  const liveCount = matches.filter(emAndamento).length
 
   // Só oferece filtrar pelas modalidades que existem neste segmento
   const modalityOptions = [

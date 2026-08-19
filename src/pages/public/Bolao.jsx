@@ -13,7 +13,7 @@ import { buildBolaoRanking } from '../../utils/bolao'
 import FilterBar from '../../components/common/FilterBar'
 import ShowMore from '../../components/common/ShowMore'
 import { useModalities } from '../../hooks/useModalities'
-import { filterMatches } from '../../utils/matchFilters'
+import { filterMatches, emAndamento } from '../../utils/matchFilters'
 import { matchTime, isTimeTBD, formatDayHeader } from '../../utils/formatDate'
 
 export default function Bolao() {
@@ -32,7 +32,7 @@ export default function Bolao() {
     matches.filter((m) => m.status === 'scheduled'),
     { query, modalityId: modalityFilter, modalities }
   ).sort((a, b) => (a.scheduledAt?.seconds || 0) - (b.scheduledAt?.seconds || 0))
-  const inPlay = matches.filter((m) => m.status === 'live')
+  const inPlay = matches.filter(emAndamento)
   const ranking = buildBolaoRanking(predictions, matches)
 
   return (

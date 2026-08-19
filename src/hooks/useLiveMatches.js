@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { collection, limit, orderBy, query, where, Timestamp } from 'firebase/firestore'
+import { EM_ANDAMENTO } from '../utils/matchFilters'
 import { db } from '../services/firebase'
 import { useLiveQuery } from './useLiveQuery'
 import { useClasses } from './useClasses'
@@ -13,11 +14,12 @@ import { freshMatch } from '../utils/teams'
 // completa continua existindo (useMatches), mas agora só quem entra no
 // Cronograma, no Bolão ou no Placar paga por ela.
 
-// Só o que está rolando agora. Campo único: não depende de índice composto.
+// Só o que está rolando agora — inclui os pausados, que continuam em jogo.
+// Campo único: não depende de índice composto.
 export function useLiveMatches() {
   const { docs, loading } = useLiveQuery(
     'matches:live',
-    () => query(collection(db, 'matches'), where('status', '==', 'live')),
+    () => query(collection(db, 'matches'), where('status', 'in', EM_ANDAMENTO)),
     { permanent: true }
   )
   const { classes } = useClasses()
