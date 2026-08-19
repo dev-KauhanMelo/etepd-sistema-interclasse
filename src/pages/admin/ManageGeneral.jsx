@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import MedalTableEditor from '../../components/admin/MedalTableEditor'
+import AwardsEditor from '../../components/admin/AwardsEditor'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import { useModalities } from '../../hooks/useModalities'
@@ -23,11 +24,13 @@ export default function ManageGeneral() {
       <div className="flex gap-2 mb-4">
         <Aba ativa={aba === 'tabela'} onClick={() => setAba('tabela')}>Tabela</Aba>
         <Aba ativa={aba === 'podios'} onClick={() => setAba('podios')}>Por modalidade</Aba>
+        <Aba ativa={aba === 'extras'} onClick={() => setAba('extras')}>Extras</Aba>
         <Aba ativa={aba === 'punicoes'} onClick={() => setAba('punicoes')}>Punições</Aba>
       </div>
 
       {aba === 'tabela' && <MedalTableEditor />}
       {aba === 'podios' && <Podios />}
+      {aba === 'extras' && <AwardsEditor />}
       {aba === 'punicoes' && <Punicoes />}
     </div>
   )

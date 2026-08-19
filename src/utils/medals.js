@@ -52,7 +52,7 @@ export const podiumId = (modalityId, categoria = 'unico') => `${modalityId}__${c
 // várias. Por isso cada colocação guarda uma LISTA de turmas, e todas as turmas
 // da lista recebem os pontos daquela colocação — quem subiu no pódio foi cada
 // uma delas.
-export function buildMedalRanking(podiums = [], penalties = [], classes = [], modalities = []) {
+export function buildMedalRanking(podiums = [], penalties = [], classes = [], modalities = [], extras = {}) {
   const linhas = new Map()
 
   // Times combinados (Primeirão, Terceirão, 2ºB/2ºC) existem como turma só
@@ -75,7 +75,7 @@ export function buildMedalRanking(podiums = [], penalties = [], classes = [], mo
         id: classId, classId,
         className: cls.name, color: cls.color, logoUrl: cls.logoUrl,
         gold: 0, silver: 0, bronze: 0,
-        earned: 0, penalty: 0, points: 0,
+        earned: 0, extras: 0, penalty: 0, points: 0,
       })
     }
     return linhas.get(classId)
@@ -101,10 +101,23 @@ export function buildMedalRanking(podiums = [], penalties = [], classes = [], mo
     }
   }
 
+  // §5.4: punição em modalidade de turmas unificadas penaliza TODAS as turmas
+  // do time, "independentemente de qual turma tenha cometido a infração".
+  // Punir o time é punir cada uma; punir uma turma sozinha atinge só ela.
   for (const pen of penalties) {
-    const l = linha(pen.classId)
+    for (const id of expandir(pen.classId)) {
+      const l = linha(id)
+      if (!l) continue
+      l.penalty += Number(pen.points) || 0
+    }
+  }
+
+  // §9.5: Performance, Torcida e Camisas somam ao mesmo placar geral
+  for (const [classId, pts] of Object.entries(extras)) {
+    const l = linha(classId)
     if (!l) continue
-    l.penalty += Number(pen.points) || 0
+    l.extras = (l.extras || 0) + pts
+    l.earned += pts
   }
 
   const rows = [...linhas.values()]

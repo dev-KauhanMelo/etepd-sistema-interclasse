@@ -26,6 +26,8 @@ service cloud.firestore {
     // Pódio de cada modalidade e punições: alimentam o ranking geral.
     match /podiums/{doc}       { allow read: if true; allow write: if isAdmin(); }
     match /penalties/{doc}     { allow read: if true; allow write: if isAdmin(); }
+    // Performance, Torcida e Camisas (§9): somam ao placar geral.
+    match /awards/{doc}        { allow read: if true; allow write: if isAdmin(); }
     match /brackets/{doc}      { allow read: if true; allow write: if isAdmin(); }
     match /announcements/{doc} { allow read: if true; allow write: if isAdmin(); }
     match /settings/{doc}      { allow read: if true; allow write: if isAdmin(); }

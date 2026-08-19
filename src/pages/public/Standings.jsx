@@ -13,6 +13,8 @@ import { useModalities } from '../../hooks/useModalities'
 import FilterBar from '../../components/common/FilterBar'
 import { useStandings } from '../../hooks/useStandings'
 import { usePodiums, usePenalties } from '../../hooks/useMedals'
+import { useAwards } from '../../hooks/useAwards'
+import { pontosDosExtras } from '../../utils/awards'
 import { buildMedalRanking, MEDALHAS, PONTOS } from '../../utils/medals'
 import { useMatches } from '../../hooks/useMatches'
 import { useClasses } from '../../hooks/useClasses'
@@ -63,11 +65,12 @@ export default function Standings() {
   const { standings: modStandings, loading: modLoading } = useStandings(activeModality, format)
   const { podiums, loading: podLoading } = usePodiums()
   const { penalties } = usePenalties()
+  const { awards } = useAwards()
   const { matches } = useMatches()
 
   // GERAL = medalhas conquistadas em cada modalidade, menos as punições.
   // Vitória em jogo não vale ponto geral; o que vale é terminar no pódio.
-  const geral = buildMedalRanking(podiums, penalties, classes, modalities)
+  const geral = buildMedalRanking(podiums, penalties, classes, modalities, pontosDosExtras(awards))
   const standings = isGeral ? geral : modStandings
   const loading = isGeral ? podLoading : modLoading
 

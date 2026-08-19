@@ -3,6 +3,8 @@ import Card from '../common/Card'
 import { useModalities } from '../../hooks/useModalities'
 import { useClasses } from '../../hooks/useClasses'
 import { usePodiums, usePenalties } from '../../hooks/useMedals'
+import { useAwards } from '../../hooks/useAwards'
+import { pontosDosExtras } from '../../utils/awards'
 import { toggleMedal } from '../../services/medalsService'
 import { buildMedalRanking, MEDALHAS, CATEGORIAS, podiumId, pontosDe } from '../../utils/medals'
 
@@ -21,9 +23,10 @@ export default function MedalTableEditor() {
   const { modalities } = useModalities()
   const { podiums } = usePodiums()
   const { penalties } = usePenalties()
+  const { awards } = useAwards()
   const [abrindo, setAbrindo] = useState(null) // { classId, key }
 
-  const rows = buildMedalRanking(podiums, penalties, classes, modalities)
+  const rows = buildMedalRanking(podiums, penalties, classes, modalities, pontosDosExtras(awards))
 
   // De quais disputas veio cada medalha desta turma
   const origens = (classId, key) =>

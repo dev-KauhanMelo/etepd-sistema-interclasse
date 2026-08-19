@@ -51,3 +51,12 @@ export async function addPenalty({ classId, points, reason }, uid) {
 export async function removePenalty(id) {
   return deleteDoc(doc(db, 'penalties', id))
 }
+
+// Colocação de Performance, Torcida ou Camisas (edital §9). `places` é a lista
+// de turmas na ordem da colocação — índice 0 é o 1º lugar.
+export async function saveAward(key, places) {
+  return setDoc(doc(db, 'awards', key), {
+    places: places.filter(Boolean),
+    updatedAt: serverTimestamp(),
+  })
+}
