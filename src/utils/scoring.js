@@ -14,8 +14,8 @@ export const SCORING = {
     unitA: 'Pontos', // rótulo genérico; cada modalidade usa o seu abaixo
   },
   sets: {
-    label: 'Partidas ganhas',
-    hint: 'Melhor de 3 ou 5 — marca quantas cada lado venceu',
+    label: 'Sets / partidas ganhas',
+    hint: 'O placar que vale é quantos sets cada lado venceu',
   },
   vencedor: {
     label: 'Só o vencedor',
@@ -33,7 +33,10 @@ const POR_MODALIDADE = {
   'futsal masculino': { tipo: 'placar', unidade: 'gols' },
   'handebol': { tipo: 'placar', unidade: 'gols' },
   'basquete': { tipo: 'placar', unidade: 'pontos' },
-  'voleibol': { tipo: 'placar', unidade: 'pontos' },
+  // Vôlei se decide em sets, e cada set tem placar próprio (edital §6.1.3:
+  // 2 sets de 20 pontos). `pontosPorSet` é o que faz a tela do juiz mostrar
+  // DOIS placares — sets ganhos e pontos do set atual — em vez de um só.
+  'voleibol': { tipo: 'sets', unidade: 'sets', pontosPorSet: 20, setsParaVencer: 2 },
   'queimado': { tipo: 'placar', unidade: 'pontos' },
   'futmesa': { tipo: 'placar', unidade: 'pontos' },
   'quadrado volei': { tipo: 'placar', unidade: 'pontos' },

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import TeamCrest from './TeamCrest'
 import { matchTime, isTimeTBD } from '../../utils/formatDate'
+import SetLine from './SetLine'
 
 // Card de confronto usado em todas as listas de jogos (Placar, Cronograma).
 //
@@ -81,8 +82,10 @@ export default function MatchRow({ match, modName }) {
         <TeamSide team={match.teamB} align="start" winner={winner === 'B'} />
       </div>
 
+      <SetLine match={match} className="relative px-3.5 -mt-1 text-center" />
+
       {modName && (
-        <p className={`relative px-3.5 pb-2.5 -mt-1 text-center font-body font-medium text-[11px] ${live ? 'text-white/60' : 'text-arena-dim'}`}>
+        <p className={`relative px-3.5 pb-2.5 pt-1 text-center font-body font-medium text-[11px] ${live ? 'text-white/60' : 'text-arena-dim'}`}>
           {modName}
         </p>
       )}

@@ -4,7 +4,7 @@ import { serverTimestamp } from 'firebase/firestore'
 import { useMatch } from '../../hooks/useMatch'
 import { useModalities } from '../../hooks/useModalities'
 import { useAuth } from '../../context/AuthContext'
-import { addMatchNote, updateMatch } from '../../services/matchesService'
+import { addMatchNote, updateMatch, closeSet, reopenLastSet, resetSetPoints } from '../../services/matchesService'
 import { advanceWinnerInBracket } from '../../services/bracketsService'
 import { recalcGroupStandings } from '../../services/groupStageService'
 import Card from '../../components/common/Card'
@@ -34,7 +34,6 @@ export default function UpdateScore() {
   const [note, setNote] = useState('')
   const [aviso, setAviso] = useState(null)
   const [encerrando, setEncerrando] = useState(false)
-  const [unidade, setUnidade] = useState('pontos')
 
   // Toques no +/- viram UMA gravação (ver hooks/usePendingScore)
   const { placar, ajustar, salvando, gravarAgora } = usePendingScore(
@@ -53,6 +52,9 @@ export default function UpdateScore() {
   // Nunca mais: só some quando a disputa não é confronto direto.
   const mostraPlacar = scoring.tipo !== 'nenhum'
   const placarIncomum = scoring.tipo === 'vencedor'
+  // Vôlei: o placar que vale é sets, mas cada set tem pontos próprios. Duas
+  // contagens ao mesmo tempo, e uma some quando o set acaba.
+  const porSet = scoring.tipo === 'sets' && !!scoring.pontosPorSet
 
   // Fase de grupos (feminino): todos contra todos, sem chave. O resultado
   // alimenta a tabela da modalidade, não um próximo confronto.
@@ -178,22 +180,20 @@ export default function UpdateScore() {
             </Card>
           )}
 
-          {mostraPlacar ? (
+          {porSet ? (
+            <SetBoard
+              match={match}
+              scoring={scoring}
+              uid={user?.uid}
+              placarSets={placar}
+              ajustarSets={ajustar}
+              salvandoSets={salvando}
+            />
+          ) : mostraPlacar ? (
             <Card className="mb-4">
-              <div className="flex items-baseline justify-between mb-1">
-                <p className="text-sm font-semibold">
-                  {unidade === 'sets' ? 'Sets ganhos' : `Marcar ${scoring.unidade || 'pontos'}`}
-                </p>
-                {/* Vôlei se decide em sets, mas o juiz pode preferir acompanhar
-                    os pontos do set. Trocar aqui não muda o que está gravado —
-                    é o mesmo número, com outro nome. */}
-                <button
-                  onClick={() => setUnidade(unidade === 'sets' ? 'pontos' : 'sets')}
-                  className="text-[11px] text-brand underline"
-                >
-                  contar {unidade === 'sets' ? 'pontos' : 'sets'}
-                </button>
-              </div>
+              <p className="text-sm font-semibold mb-1">
+                {scoring.tipo === 'sets' ? `${scoring.unidade} ganhas` : `Marcar ${scoring.unidade || 'pontos'}`}
+              </p>
               <p className="text-xs text-slate-400 mb-3">
                 {placarIncomum
                   ? 'Esta modalidade costuma ser só "quem passou" — marque se precisar.'
@@ -316,6 +316,127 @@ function FinishBox({ match, onPick, disabled, aberto = false }) {
         </button>
       )}
     </Card>
+  )
+}
+
+// PLACAR DE VÔLEI: DOIS CONTADORES
+//
+// Sets ganhos é o placar oficial — é ele que aparece pro aluno e decide quem
+// venceu. Pontos são de um set só: existem enquanto ele está em jogo e somem
+// quando acaba. Antes tudo isso era um número só, e registrar um set exigia
+// apagar 21 pontos no −1 antes de somar o set.
+//
+// ENCERRAR SET faz as três coisas de uma vez: dá o set a quem fez mais pontos,
+// guarda o placar no histórico e zera os pontos pro próximo.
+function SetBoard({ match, scoring, uid, placarSets, ajustarSets, salvandoSets }) {
+  const [aviso, setAviso] = useState('')
+
+  const { placar: pontos, ajustar: ajustarPontos, salvando: salvandoPontos, gravarAgora } =
+    usePendingScore(match, (campos) => updateMatch(match.id, campos, uid), { A: 'pointsA', B: 'pointsB' })
+
+  const setsA = placarSets('A')
+  const setsB = placarSets('B')
+  const pa = pontos('A')
+  const pb = pontos('B')
+  const setAtual = (match.periodScores?.length || 0) + 1
+  const decidido = setsA >= scoring.setsParaVencer || setsB >= scoring.setsParaVencer
+
+  const encerrarSet = async () => {
+    if (pa === pb) return setAviso('Empatado — o set precisa de um vencedor.')
+    setAviso('')
+    gravarAgora()
+    // dá tempo da gravação dos pontos chegar antes de lê-los pra fechar o set
+    await new Promise((r) => setTimeout(r, 350))
+    const r = await closeSet({ ...match, pointsA: pa, pointsB: pb }, uid)
+    if (r.ok) setAviso(`Set ${setAtual} para ${r.vencedor === 'A' ? match.teamA?.name : match.teamB?.name} (${r.placar}).`)
+  }
+
+  return (
+    <>
+      {/* Placar oficial */}
+      <Card className="mb-3">
+        <p className="text-sm font-semibold mb-1">Sets ganhos</p>
+        <p className="text-xs text-slate-400 mb-3">
+          É este o placar que aparece pros alunos. Melhor de {scoring.setsParaVencer * 2 - 1}
+          {' '}— vence quem fizer {scoring.setsParaVencer}.
+        </p>
+        <div className="flex items-center justify-around">
+          <SetCount team={match.teamA} valor={setsA} onAdjust={(d) => ajustarSets('A', d)} />
+          <span className="text-slate-300 score-number text-2xl">×</span>
+          <SetCount team={match.teamB} valor={setsB} onAdjust={(d) => ajustarSets('B', d)} />
+        </div>
+        <p className="text-center text-[11px] text-slate-400 mt-2 h-4">{salvandoSets ? 'salvando…' : ''}</p>
+
+        {match.periodScores?.length > 0 && (
+          <div className="border-t border-slate-100 mt-3 pt-2 flex items-center justify-between">
+            <p className="text-[11px] text-slate-500">
+              {match.periodScores.map((s, i) => `${i + 1}º set ${s.scoreA}×${s.scoreB}`).join(' · ')}
+            </p>
+            <button
+              onClick={() => { if (confirm('Desfazer o último set?')) reopenLastSet(match, uid) }}
+              className="text-[11px] text-slate-400 underline shrink-0 ml-2"
+            >
+              desfazer
+            </button>
+          </div>
+        )}
+      </Card>
+
+      {/* Pontos do set em andamento */}
+      {decidido ? (
+        <Card className="mb-4 bg-emerald-50 border-2 border-emerald-300">
+          <p className="text-sm font-bold text-emerald-800">
+            {setsA > setsB ? match.teamA?.name : match.teamB?.name} fechou o jogo em sets.
+          </p>
+          <p className="text-xs text-slate-500 mt-1">Pode finalizar a partida abaixo.</p>
+        </Card>
+      ) : (
+        <Card className="mb-4">
+          <p className="text-sm font-semibold mb-1">{setAtual}º set · pontos</p>
+          <p className="text-xs text-slate-400 mb-3">
+            Set de {scoring.pontosPorSet} pontos. Toque no + de quem marcou.
+          </p>
+          <div className="flex items-center justify-around">
+            <ScoreControl team={match.teamA} score={pa} onAdjust={(d) => ajustarPontos('A', d)} />
+            <span className="text-slate-300 score-number text-2xl">×</span>
+            <ScoreControl team={match.teamB} score={pb} onAdjust={(d) => ajustarPontos('B', d)} />
+          </div>
+          <p className="text-center text-[11px] text-slate-400 mt-2 h-4">{salvandoPontos ? 'salvando…' : ''}</p>
+
+          <button
+            onClick={encerrarSet}
+            disabled={pa === pb}
+            className="w-full mt-3 rounded-xl bg-brand text-white py-3.5 font-bold active:scale-[0.98] transition disabled:opacity-40"
+          >
+            ENCERRAR {setAtual}º SET
+          </button>
+          <div className="flex items-center justify-between mt-2">
+            <button
+              onClick={() => { if (confirm('Zerar os pontos deste set?')) resetSetPoints(match, uid) }}
+              className="text-xs text-slate-500 underline"
+            >
+              Zerar pontos do set
+            </button>
+            {aviso && <span className="text-xs text-emerald-700">{aviso}</span>}
+          </div>
+        </Card>
+      )}
+    </>
+  )
+}
+
+// Contador de sets: menor que o de pontos, porque muda pouco e um toque errado
+// aqui custa mais caro do que no placar do set.
+function SetCount({ team, valor, onAdjust }) {
+  return (
+    <div className="text-center">
+      <p className="text-xs font-medium text-slate-500 mb-1">{team?.name}</p>
+      <p className="score-number text-4xl mb-2" style={{ color: team?.color }}>{valor}</p>
+      <div className="flex gap-1.5 justify-center">
+        <button onClick={() => onAdjust(-1)} className="w-9 h-9 rounded-full bg-slate-100 text-sm font-bold active:scale-90 transition">−</button>
+        <button onClick={() => onAdjust(1)} className="w-9 h-9 rounded-full bg-slate-200 text-sm font-bold active:scale-90 transition">+</button>
+      </div>
+    </div>
   )
 }
 

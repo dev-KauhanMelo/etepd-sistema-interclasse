@@ -11,28 +11,33 @@ const ESPERA_MS = 2500
 //
 // O placar exibido é sempre o do banco + o que ainda não foi gravado, então a
 // tela nunca "volta atrás" quando a gravação finalmente chega.
-export function usePendingScore(match, onFlush) {
+//
+// `campos`: quais campos do jogo este contador mexe. Vôlei tem dois placares
+// vivos ao mesmo tempo — sets ganhos e pontos do set — e cada um usa uma
+// instância própria do hook.
+export function usePendingScore(match, onFlush, campos = { A: 'scoreA', B: 'scoreB' }) {
   const [pendente, setPendente] = useState({ A: 0, B: 0 })
   const timer = useRef(null)
-  const dados = useRef({ pendente: { A: 0, B: 0 }, match, onFlush })
+  const dados = useRef({ pendente: { A: 0, B: 0 }, match, onFlush, campos })
 
   dados.current.match = match
   dados.current.onFlush = onFlush
+  dados.current.campos = campos
 
   const gravar = useCallback(() => {
-    const { pendente: p, match: m, onFlush: fn } = dados.current
+    const { pendente: p, match: m, onFlush: fn, campos: c } = dados.current
     if (!m || (p.A === 0 && p.B === 0)) return
     const alvo = {}
-    if (p.A !== 0) alvo.scoreA = Math.max(0, (m.scoreA || 0) + p.A)
-    if (p.B !== 0) alvo.scoreB = Math.max(0, (m.scoreB || 0) + p.B)
+    if (p.A !== 0) alvo[c.A] = Math.max(0, (m[c.A] || 0) + p.A)
+    if (p.B !== 0) alvo[c.B] = Math.max(0, (m[c.B] || 0) + p.B)
     dados.current.pendente = { A: 0, B: 0 }
     setPendente({ A: 0, B: 0 })
     fn(alvo)
   }, [])
 
   const ajustar = useCallback((lado, delta) => {
-    const m = dados.current.match
-    const atual = (m?.[lado === 'A' ? 'scoreA' : 'scoreB'] || 0) + dados.current.pendente[lado]
+    const { match: m, campos: c } = dados.current
+    const atual = (m?.[c[lado]] || 0) + dados.current.pendente[lado]
     // Não deixa o pendente levar o placar a número negativo
     if (atual + delta < 0) return
     const novo = { ...dados.current.pendente, [lado]: dados.current.pendente[lado] + delta }
@@ -46,8 +51,7 @@ export function usePendingScore(match, onFlush) {
   // apertado "voltar" rápido demais.
   useEffect(() => () => { clearTimeout(timer.current); gravar() }, [gravar])
 
-  const placar = (lado) =>
-    (match?.[lado === 'A' ? 'scoreA' : 'scoreB'] || 0) + pendente[lado]
+  const placar = (lado) => (match?.[campos[lado]] || 0) + pendente[lado]
 
   return { placar, ajustar, salvando: pendente.A !== 0 || pendente.B !== 0, gravarAgora: gravar }
 }

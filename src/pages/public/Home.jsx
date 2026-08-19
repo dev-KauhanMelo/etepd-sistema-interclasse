@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import Loader from '../../components/common/Loader'
 import Credits from '../../components/layout/Credits'
 import TeamCrest from '../../components/match/TeamCrest'
+import SetLine from '../../components/match/SetLine'
 import { useLiveMatches, useNextMatches } from '../../hooks/useLiveMatches'
 import { useModalities } from '../../hooks/useModalities'
 import { useAnnouncements } from '../../hooks/useAnnouncements'
@@ -190,6 +191,7 @@ function LiveHero({ match, modName }) {
             </div>
             <HeroSide team={match.teamB} />
           </div>
+          <SetLine match={match} className="text-center mt-2" />
         </div>
       </div>
     </Link>

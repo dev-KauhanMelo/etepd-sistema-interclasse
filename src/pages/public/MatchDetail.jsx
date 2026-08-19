@@ -10,6 +10,8 @@ import { ArrowLeftIcon } from '../../components/common/Icons'
 import { useNavigate } from 'react-router-dom'
 import { useMatch } from '../../hooks/useMatch'
 import { useModalities } from '../../hooks/useModalities'
+import SetLine from '../../components/match/SetLine'
+import { scoringOf } from '../../utils/scoring'
 import { matchDateTime } from '../../utils/formatDate'
 import { PHASE_LABELS } from '../../utils/constants'
 import { MATCH_STATUS } from '../../utils/constants'
@@ -34,7 +36,10 @@ export default function MatchDetail() {
 
   const isLive = match.status === 'live'
   const finished = match.status === 'finished'
-  const modName = modalities.find((m) => m.id === match.modalityId)?.name || ''
+  const modality = modalities.find((m) => m.id === match.modalityId)
+  const modName = modality?.name || ''
+  // Vôlei: o histórico são sets, não tempos de jogo
+  const porSet = scoringOf(modName, modality).tipo === 'sets'
   const a = match.teamA?.color || '#DC2626'
   const b = match.teamB?.color || '#2563EB'
   const statusLabel = isLive
@@ -118,7 +123,7 @@ export default function MatchDetail() {
         {/* Por período */}
         {match.periodScores?.length > 0 && (
           <>
-            <SectionTitle className="mt-5">Por período</SectionTitle>
+            <SectionTitle className="mt-5">{porSet ? 'Sets' : 'Por período'}</SectionTitle>
             <div className="flex flex-col gap-1.5">
               {match.periodScores.map((p, i) => {
                 const current = isLive && p.period === match.currentPeriod
@@ -128,7 +133,7 @@ export default function MatchDetail() {
                     className="flex justify-between items-center bg-arena-panel border border-white/[0.06] px-3.5 py-[9px]"
                   >
                     <span className="font-bracket font-semibold text-[13px] text-arena-muted uppercase tracking-wide">
-                      {p.period}º tempo
+                      {p.period}º {porSet ? 'set' : 'tempo'}
                     </span>
                     <span className={`font-bracket-display text-[15px] ${current ? 'text-gold' : 'text-white'}`}>
                       {p.scoreA} × {p.scoreB}
